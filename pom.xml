@@ -13,4 +13,47 @@
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>2.5.0</version>
+                <executions>
+                    <execution>
+                        <id>xjc_pos</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                        <configuration>
+                            <!-- The package of your generated sources -->
+                            <packageName>org.example.er2petriflow.generated.er</packageName>
+                            <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
+                            <sources>
+                                <source>src/main/resources/schemas/er/ygraphml.xsd</source>
+                            </sources>
+                            <generateEpisode>false</generateEpisode>
+                            <clearOutputDir>false</clearOutputDir>
+                            <noGeneratedHeaderComments>true</noGeneratedHeaderComments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>2.3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.3</version>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+
 </project>
