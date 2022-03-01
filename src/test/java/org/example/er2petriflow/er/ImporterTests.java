@@ -1,6 +1,7 @@
 package org.example.er2petriflow.er;
 
 import org.example.er2petriflow.er.domain.Attribute;
+import org.example.er2petriflow.er.domain.AttributeType;
 import org.example.er2petriflow.er.domain.ERDiagram;
 import org.example.er2petriflow.er.domain.Entity;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,6 +43,14 @@ public class ImporterTests {
         List<Attribute> attributes = entity.getAttributes();
         assertNotNull(attributes);
         assertEquals(2, attributes.size());
+
+        Set<String> titles = new java.util.HashSet<>(Set.of("Attribute1", "Attribute2"));
+
+        for (Attribute a : attributes) {
+            assertEquals(AttributeType.TEXT, a.getType());
+            assertTrue(titles.contains(a.getName()));
+            titles.remove(a.getName());
+        }
     }
 
     private InputStream getTestFile(String fileName) {
