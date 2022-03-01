@@ -10,7 +10,7 @@ import lombok.Setter;
 public class Connector {
 
     private String type;
-    private int source;
-    private int destination;
+    private Integer source;
+    private Integer destination;
 
 }

@@ -10,6 +10,6 @@ import lombok.Setter;
 public class Details {
 
     private String name;
-    private int id;
+    private Integer id;
 
 }

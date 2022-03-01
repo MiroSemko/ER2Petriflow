@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.er2petriflow.er.domain.ERDiagram;
 import org.example.er2petriflow.er.json.Diagram;
+import org.example.er2petriflow.er.json.Shape;
 import org.example.er2petriflow.generated.er.*;
 
 import javax.xml.bind.JAXBContext;
@@ -18,8 +19,8 @@ import java.util.Optional;
 public class Importer {
 
     private Diagram imported;
-    private Map<Key, String> keys;
     private ERDiagram result;
+    private Map<Integer, Shape> shapeMap;
 
     public Optional<ERDiagram> importDiagram(InputStream jsonFile) {
         try {
@@ -37,37 +38,19 @@ public class Importer {
 
     protected Optional<ERDiagram> convert(Diagram imported) {
         this.imported = imported;
-//        mapKeys();
-//        if (!allKeysMapped()) {
-            return Optional.empty();
-//        }
-//        result = new ERDiagram();
-//        extractNodeData();
-//        return Optional.of(result);
+        mapShapes();
+        result = new ERDiagram();
+//        parseEntities();
+        return Optional.of(result);
     }
-//
-//    protected void mapKeys() {
-//        keys = new HashMap<>();
-//        for (KeyType xmlKey : imported.getKey()) {
-//            String name = xmlKey.getAttrName();
-//            for (Key key : Key.values()) {
-//                if (name.equals(key.getAttributeName())) {
-//                    keys.put(key, xmlKey.getId());
-//                    break;
-//                }
-//            }
-//        }
-//    }
-//
-//    protected boolean allKeysMapped() {
-//        for (Key key : Key.values()) {
-//            if (!keys.containsKey(key)) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
-//
+
+    protected void mapShapes() {
+        shapeMap = new HashMap<>();
+        for (Shape s : imported.getShapes()) {
+            shapeMap.put(s.getDetails().getId(), s);
+        }
+    }
+
 //    protected void extractNodeData() {
 //        GraphType graph = null;
 //        for (Object obj : imported.getGraphOrData()) {
