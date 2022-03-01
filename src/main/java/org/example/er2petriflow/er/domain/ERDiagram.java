@@ -16,4 +16,8 @@ public class ERDiagram {
         this.relations = new ArrayList<>();
     }
 
+    public void addEntity(Entity entity) {
+        entities.add(entity);
+    }
+
 }

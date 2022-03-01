@@ -3,24 +3,23 @@ package org.example.er2petriflow.er;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.er2petriflow.er.domain.ERDiagram;
+import org.example.er2petriflow.er.domain.Entity;
+import org.example.er2petriflow.er.json.Details;
 import org.example.er2petriflow.er.json.Diagram;
 import org.example.er2petriflow.er.json.Shape;
-import org.example.er2petriflow.generated.er.*;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class Importer {
 
     private Diagram imported;
     private ERDiagram result;
+
     private Map<Integer, Shape> shapeMap;
+    private List<Details> entities;
+    private List<Details> attributes;
 
     public Optional<ERDiagram> importDiagram(InputStream jsonFile) {
         try {
@@ -40,52 +39,35 @@ public class Importer {
         this.imported = imported;
         mapShapes();
         result = new ERDiagram();
-//        parseEntities();
+        parseEntities();
         return Optional.of(result);
     }
 
     protected void mapShapes() {
         shapeMap = new HashMap<>();
+        entities = new ArrayList<>();
+        attributes = new ArrayList<>();
+
         for (Shape s : imported.getShapes()) {
             shapeMap.put(s.getDetails().getId(), s);
+            parseShape(s);
         }
     }
 
-//    protected void extractNodeData() {
-//        GraphType graph = null;
-//        for (Object obj : imported.getGraphOrData()) {
-//            if (obj instanceof GraphType) {
-//                graph = (GraphType) obj;
-//                break;
-//            }
-//        }
-//        if (graph == null) {
-//            return;
-//        }
-//        for (Object obj : graph.getDataOrNodeOrEdge()) {
-//            if (obj instanceof NodeType) {
-//                parseNode((NodeType) obj);
-//            }
-//        }
-//    }
-//
-//    protected void parseNode(NodeType node) {
-//        for (Object obj : node.getDataOrPort()) {
-//            if (obj instanceof DataType) {
-//                DataType data = (DataType) obj;
-//                if (data.getKey().equals(keys.get(Key.POTENTIAL_COMPACT_ENTITY))) {
-//                    parsePotentialCompactEntity(data);
-//                }
-//            }
-//        }
-//    }
-//
-//    protected void parsePotentialCompactEntity(DataType data) {
-//        for (Object obj : data.getContent()) {
-//            if (obj instanceof ElementNSImpl) {
-//                ElementNSImpl test = (ElementNSImpl) obj;
-//            }
-//        }
-//    }
+    protected void parseShape(Shape shape) {
+        switch (shape.getType()) {
+            case "Entity":
+                entities.add(shape.getDetails());
+            case "Attribute":
+                attributes.add(shape.getDetails());
+        }
+    }
+
+    protected void parseEntities() {
+        for (Details entity: entities) {
+            Entity e = new Entity(entity.getName());
+            result.addEntity(e);
+        }
+    }
 
 }
