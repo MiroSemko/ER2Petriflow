@@ -1,0 +1,15 @@
+package org.example.er2petriflow.er.json;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+public class Details {
+
+    private String name;
+    private int id;
+
+}

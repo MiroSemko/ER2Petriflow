@@ -21,9 +21,9 @@ public class ImporterTests {
     }
 
     @Test
-    @DisplayName("Should import single compact entity")
+    @DisplayName("Should import single entity")
     void importSingleCompactEntity() {
-        Optional<ERDiagram> result = importer.importDiagram(getTestFile("CompactEntitySingle"));
+        Optional<ERDiagram> result = importer.importDiagram(getTestFile("SingleEntity"));
         assertTrue(result.isPresent());
 
         ERDiagram diagram = result.get();
@@ -34,10 +34,10 @@ public class ImporterTests {
 
         Entity entity = diagram.getEntities().get(0);
         assertNotNull(entity);
-        assertEquals("Entity 1", entity.getName());
+        assertEquals("Entity", entity.getName());
     }
 
     private InputStream getTestFile(String fileName) {
-        return ImporterTests.class.getResourceAsStream("/" + fileName + ".graphml");
+        return ImporterTests.class.getResourceAsStream("/" + fileName + ".erdplus");
     }
 }

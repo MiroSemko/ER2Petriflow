@@ -1,0 +1,68 @@
+﻿{
+  "version": 2,
+  "www": "erdplus.com",
+  "shapes": [
+    {
+      "type": "Entity",
+      "details": {
+        "name": "Entity",
+        "type": "regular",
+        "x": 672,
+        "y": 322.5,
+        "isDisjointed": true,
+        "isTotalSpecialization": true,
+        "isSubtype": false,
+        "supertypeEntityId": null,
+        "id": 4
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Attribute1: String",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 616,
+        "y": 128.5,
+        "id": 5
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Attribute2: text",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 789,
+        "y": 152.5,
+        "id": 6
+      }
+    }
+  ],
+  "connectors": [
+    {
+      "type": "Connector",
+      "details": {
+        "id": 7
+      },
+      "source": 5,
+      "destination": 4
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 8
+      },
+      "source": 6,
+      "destination": 4
+    }
+  ],
+  "width": 2000,
+  "height": 1000
+}
