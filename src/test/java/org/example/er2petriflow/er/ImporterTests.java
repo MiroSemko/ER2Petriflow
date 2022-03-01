@@ -1,5 +1,6 @@
 package org.example.er2petriflow.er;
 
+import org.example.er2petriflow.er.domain.Attribute;
 import org.example.er2petriflow.er.domain.ERDiagram;
 import org.example.er2petriflow.er.domain.Entity;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,7 +24,7 @@ public class ImporterTests {
 
     @Test
     @DisplayName("Should import single entity")
-    void importSingleCompactEntity() {
+    void importSingleEntity() {
         Optional<ERDiagram> result = importer.importDiagram(getTestFile("SingleEntity"));
         assertTrue(result.isPresent());
 
@@ -35,6 +37,10 @@ public class ImporterTests {
         Entity entity = diagram.getEntities().get(0);
         assertNotNull(entity);
         assertEquals("Entity", entity.getName());
+
+        List<Attribute> attributes = entity.getAttributes();
+        assertNotNull(attributes);
+        assertEquals(2, attributes.size());
     }
 
     private InputStream getTestFile(String fileName) {
