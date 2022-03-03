@@ -1,5 +1,6 @@
 package org.example.er2petriflow.er;
 
+import lombok.AllArgsConstructor;
 import org.example.er2petriflow.er.domain.Attribute;
 import org.example.er2petriflow.er.domain.AttributeType;
 import org.example.er2petriflow.er.domain.ERDiagram;
@@ -9,10 +10,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,15 +34,12 @@ public class ImporterTests {
         assertTrue(result.isPresent());
 
         ERDiagram diagram = result.get();
-        assertNotNull(diagram.getRelations());
-        assertEquals(0, diagram.getRelations().size());
         assertNotNull(diagram.getEntities());
         assertEquals(1, diagram.getEntities().size());
+        assertNotNull(diagram.getRelations());
+        assertEquals(0, diagram.getRelations().size());
 
-        Entity entity = diagram.getEntities().get(0);
-        assertNotNull(entity);
-        assertEquals("Entity1", entity.getName());
-        testEntity1(entity);
+        testEntities(diagram, new EntityTest(ENTITY_1_NAME, this::testEntity1));
     }
 
     @Test
@@ -53,26 +49,27 @@ public class ImporterTests {
         assertTrue(result.isPresent());
 
         ERDiagram diagram = result.get();
-        assertNotNull(diagram.getRelations());
-        assertEquals(0, diagram.getRelations().size());
         assertNotNull(diagram.getEntities());
         assertEquals(2, diagram.getEntities().size());
+        assertNotNull(diagram.getRelations());
+        assertEquals(0, diagram.getRelations().size());
 
-        Set<String> titles = new HashSet<>(Set.of(ENTITY_1_NAME, ENTITY_2_NAME));
+        testEntities(diagram, new EntityTest(ENTITY_1_NAME, this::testEntity1), new EntityTest(ENTITY_2_NAME, this::testEntity2));
+    }
 
-        for (Entity e : diagram.getEntities()) {
-            assertNotNull(e);
-            assertTrue(titles.contains(e.getName()));
-            titles.remove(e.getName());
-            switch (e.getName()) {
-                case ENTITY_1_NAME:
-                    testEntity1(e);
-                    break;
-                case ENTITY_2_NAME:
-                    testEntity2(e);
-                    break;
-            }
-        }
+    @Test
+    @DisplayName("Should import single relation")
+    void importSingleRelation() {
+        Optional<ERDiagram> result = importer.importDiagram(getTestFile("SingleRelation"));
+        assertTrue(result.isPresent());
+
+        ERDiagram diagram = result.get();
+        assertNotNull(diagram.getEntities());
+        assertEquals(2, diagram.getEntities().size());
+        assertNotNull(diagram.getRelations());
+        assertEquals(1, diagram.getRelations().size());
+
+
     }
 
     private InputStream getTestFile(String fileName) {
@@ -85,6 +82,20 @@ public class ImporterTests {
 
     private void testEntity2(Entity entity) {
         testAttributes(entity, Set.of("New Attribute", "NewAttribute2", "NewAttribute3", "NewAttribute4"), AttributeType.NUMBER);
+    }
+
+    private void testEntities(ERDiagram diagram, EntityTest... tests) {
+        HashMap<String, Consumer<Entity>> testMap = new HashMap<>();
+        for (EntityTest test : tests) {
+            testMap.put(test.entityName, test.entityTest);
+        }
+
+        for (Entity e : diagram.getEntities()) {
+            assertNotNull(e);
+            assertTrue(testMap.containsKey(e.getName()));
+            Consumer<Entity> test = testMap.remove(e.getName());
+            test.accept(e);
+        }
     }
 
     private void testAttributes(Entity entity, Set<String> expectedTitles, AttributeType expectedType) {
@@ -100,5 +111,11 @@ public class ImporterTests {
             assertTrue(titles.contains(a.getName()));
             titles.remove(a.getName());
         }
+    }
+
+    @AllArgsConstructor
+    private static class EntityTest {
+        private String entityName;
+        private Consumer<Entity> entityTest;
     }
 }
