@@ -1,10 +1,7 @@
 package org.example.er2petriflow.er;
 
 import lombok.AllArgsConstructor;
-import org.example.er2petriflow.er.domain.Attribute;
-import org.example.er2petriflow.er.domain.AttributeType;
-import org.example.er2petriflow.er.domain.ERDiagram;
-import org.example.er2petriflow.er.domain.Entity;
+import org.example.er2petriflow.er.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,8 +14,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ImporterTests {
 
-    private static final EntityTest ENTITY_1_TEST = new EntityTest("Entity1", ImporterTests::testEntity1);
-    private static final EntityTest ENTITY_2_TEST = new EntityTest("Entity with more attributes", ImporterTests::testEntity2);
+    private static final String ENTITY_1_NAME = "Entity1";
+    private static final String ENTITY_2_NAME = "Entity with more attributes";
+
+    private static final EntityTest ENTITY_1_TEST = new EntityTest(ENTITY_1_NAME, ImporterTests::testEntity1);
+    private static final EntityTest ENTITY_2_TEST = new EntityTest(ENTITY_2_NAME, ImporterTests::testEntity2);
 
     Importer importer;
 
@@ -70,7 +70,7 @@ public class ImporterTests {
         assertEquals(1, diagram.getRelations().size());
 
         testEntities(diagram, ENTITY_1_TEST, ENTITY_2_TEST);
-
+        testRelation1(diagram.getRelations().get(0));
     }
 
     private InputStream getTestFile(String fileName) {
@@ -112,6 +112,23 @@ public class ImporterTests {
 
     private static void testEntity2(Entity entity) {
         testAttributes(entity, Set.of("New Attribute", "NewAttribute2", "NewAttribute3", "NewAttribute4"), AttributeType.NUMBER);
+    }
+
+    private static void testRelation1(Relation relation) {
+        assertEquals("Relationship",relation.getName());
+
+        Set<String> connectedEntities = new HashSet<>(Set.of(ENTITY_1_NAME, ENTITY_2_NAME));
+
+        Set<Entity> connections = relation.getConnections();
+
+        assertNotNull(connections);
+        assertEquals(connectedEntities.size(), connections.size());
+
+        for (Entity e : connections) {
+            assertNotNull(e);
+            assertTrue(connectedEntities.contains(e.getName()));
+            connectedEntities.remove(e.getName());
+        }
     }
 
     @AllArgsConstructor
