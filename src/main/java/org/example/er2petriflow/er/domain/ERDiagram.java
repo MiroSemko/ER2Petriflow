@@ -20,4 +20,8 @@ public class ERDiagram {
         entities.add(entity);
     }
 
+    public void addRelation(Relation relation) {
+        relations.add(relation);
+    }
+
 }

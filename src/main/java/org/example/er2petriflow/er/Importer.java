@@ -2,10 +2,7 @@ package org.example.er2petriflow.er;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.er2petriflow.er.domain.Attribute;
-import org.example.er2petriflow.er.domain.AttributeType;
-import org.example.er2petriflow.er.domain.ERDiagram;
-import org.example.er2petriflow.er.domain.Entity;
+import org.example.er2petriflow.er.domain.*;
 import org.example.er2petriflow.er.json.Connector;
 import org.example.er2petriflow.er.json.Details;
 import org.example.er2petriflow.er.json.Diagram;
@@ -19,13 +16,16 @@ public class Importer {
 
     protected static final String SHAPE_TYPE_ENTITY = "Entity";
     protected static final String SHAPE_TYPE_ATTRIBUTE = "Attribute";
+    protected static final String SHAPE_TYPE_RELATION = "Relationship";
 
     private Diagram imported;
     private ERDiagram result;
 
     private Map<Integer, Shape> shapeMap;
     private List<Details> entities;
+    private List<Details> relations;
     private Map<Integer, List<Connector>> connectorMap;
+    private Map<Integer, Entity> entityMap;
 
     public Optional<ERDiagram> importDiagram(InputStream jsonFile) {
         try {
@@ -47,12 +47,15 @@ public class Importer {
         mapConnectors();
         result = new ERDiagram();
         parseEntities();
+        parseRelations();
         return Optional.of(result);
     }
 
     protected void mapShapes() {
         shapeMap = new HashMap<>();
+        entityMap = new HashMap<>();
         entities = new ArrayList<>();
+        relations = new ArrayList<>();
 
         for (Shape s : imported.getShapes()) {
             shapeMap.put(s.getDetails().getId(), s);
@@ -64,6 +67,10 @@ public class Importer {
         switch (shape.getType()) {
             case SHAPE_TYPE_ENTITY:
                 entities.add(shape.getDetails());
+                break;
+            case SHAPE_TYPE_RELATION:
+                relations.add(shape.getDetails());
+                break;
         }
     }
 
@@ -90,6 +97,7 @@ public class Importer {
             Entity e = new Entity(entity.getName());
             parseAttributes(entity, e);
             result.addEntity(e);
+            entityMap.put(entity.getId(), e);
         }
     }
 
@@ -116,6 +124,16 @@ public class Importer {
     protected Attribute parseAttribute(Shape attribute) {
         String[] split = attribute.getDetails().getName().split(":", 2);
         return new Attribute(split[0].trim(), AttributeType.resolve(split[1].trim()));
+    }
+
+    protected void parseRelations() {
+        for (Details relation: relations) {
+            Relation r = new Relation(relation.getName());
+            for (Connector c : connectorMap.get(relation.getId())) {
+                r.addEntity(entityMap.get(resolveDestinationShape(c).getDetails().getId()));
+            }
+            result.addRelation(r);
+        }
     }
 
 }

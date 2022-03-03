@@ -17,8 +17,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ImporterTests {
 
-    private static final String ENTITY_1_NAME = "Entity1";
-    private static final String ENTITY_2_NAME = "Entity with more attributes";
+    private static final EntityTest ENTITY_1_TEST = new EntityTest("Entity1", ImporterTests::testEntity1);
+    private static final EntityTest ENTITY_2_TEST = new EntityTest("Entity with more attributes", ImporterTests::testEntity2);
 
     Importer importer;
 
@@ -39,7 +39,7 @@ public class ImporterTests {
         assertNotNull(diagram.getRelations());
         assertEquals(0, diagram.getRelations().size());
 
-        testEntities(diagram, new EntityTest(ENTITY_1_NAME, this::testEntity1));
+        testEntities(diagram, ENTITY_1_TEST);
     }
 
     @Test
@@ -54,7 +54,7 @@ public class ImporterTests {
         assertNotNull(diagram.getRelations());
         assertEquals(0, diagram.getRelations().size());
 
-        testEntities(diagram, new EntityTest(ENTITY_1_NAME, this::testEntity1), new EntityTest(ENTITY_2_NAME, this::testEntity2));
+        testEntities(diagram, ENTITY_1_TEST, ENTITY_2_TEST);
     }
 
     @Test
@@ -69,19 +69,12 @@ public class ImporterTests {
         assertNotNull(diagram.getRelations());
         assertEquals(1, diagram.getRelations().size());
 
+        testEntities(diagram, ENTITY_1_TEST, ENTITY_2_TEST);
 
     }
 
     private InputStream getTestFile(String fileName) {
         return ImporterTests.class.getResourceAsStream("/" + fileName + ".erdplus");
-    }
-
-    private void testEntity1(Entity entity) {
-        testAttributes(entity, Set.of("Attribute1", "Attribute2"), AttributeType.TEXT);
-    }
-
-    private void testEntity2(Entity entity) {
-        testAttributes(entity, Set.of("New Attribute", "NewAttribute2", "NewAttribute3", "NewAttribute4"), AttributeType.NUMBER);
     }
 
     private void testEntities(ERDiagram diagram, EntityTest... tests) {
@@ -98,7 +91,7 @@ public class ImporterTests {
         }
     }
 
-    private void testAttributes(Entity entity, Set<String> expectedTitles, AttributeType expectedType) {
+    private static void testAttributes(Entity entity, Set<String> expectedTitles, AttributeType expectedType) {
         List<Attribute> attributes = entity.getAttributes();
         int expectedCount = expectedTitles.size();
 
@@ -111,6 +104,14 @@ public class ImporterTests {
             assertTrue(titles.contains(a.getName()));
             titles.remove(a.getName());
         }
+    }
+
+    private static void testEntity1(Entity entity) {
+        testAttributes(entity, Set.of("Attribute1", "Attribute2"), AttributeType.TEXT);
+    }
+
+    private static void testEntity2(Entity entity) {
+        testAttributes(entity, Set.of("New Attribute", "NewAttribute2", "NewAttribute3", "NewAttribute4"), AttributeType.NUMBER);
     }
 
     @AllArgsConstructor
