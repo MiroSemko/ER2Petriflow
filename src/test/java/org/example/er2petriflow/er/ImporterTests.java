@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static org.example.er2petriflow.er.TestHelper.getTestFile;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ImporterTests {
@@ -20,7 +21,7 @@ public class ImporterTests {
     private static final EntityTest ENTITY_1_TEST = new EntityTest(ENTITY_1_NAME, ImporterTests::testEntity1);
     private static final EntityTest ENTITY_2_TEST = new EntityTest(ENTITY_2_NAME, ImporterTests::testEntity2);
 
-    Importer importer;
+    private Importer importer;
 
     @BeforeEach
     void setUp() {
@@ -71,10 +72,6 @@ public class ImporterTests {
 
         testEntities(diagram, ENTITY_1_TEST, ENTITY_2_TEST);
         testRelation1(diagram.getRelations().get(0));
-    }
-
-    private InputStream getTestFile(String fileName) {
-        return ImporterTests.class.getResourceAsStream("/" + fileName + ".erdplus");
     }
 
     private void testEntities(ERDiagram diagram, EntityTest... tests) {
