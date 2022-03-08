@@ -6,14 +6,16 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
 public class Entity {
 
+    @Getter
     private final String name;
+    @Getter
     private final List<Attribute> attributes;
 
     private int attributeCounter = 0;
 
+    @Getter
     @Setter
     private String processIdentifier;
 

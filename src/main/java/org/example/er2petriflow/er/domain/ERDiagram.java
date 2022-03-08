@@ -5,10 +5,11 @@ import lombok.Getter;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
 public class ERDiagram {
 
+    @Getter
     private final List<Entity> entities;
+    @Getter
     private final List<Relation> relations;
 
     private int entityCounter = 0;

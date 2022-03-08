@@ -1,18 +1,23 @@
 package org.example.er2petriflow.er.domain;
 
+import lombok.Getter;
+import org.example.er2petriflow.generated.petriflow.DataType;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
 public enum AttributeType {
-    TEXT("text", "string", "varchar"),
-    NUMBER("number", "int", "integer", "float", "double");
+    TEXT(DataType.TEXT, "text", "string", "varchar"),
+    NUMBER(DataType.NUMBER, "number", "int", "integer", "float", "double");
 
-
+    @Getter
+    private final DataType mapping;
     private final Set<String> synonyms;
 
-    AttributeType(String... synonyms) {
+    AttributeType(DataType mapping, String... synonyms) {
+        this.mapping = mapping;
         this.synonyms = new HashSet<>(List.of(synonyms));
     }
 
