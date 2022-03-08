@@ -1,6 +1,7 @@
 package org.example.er2petriflow.er;
 
 import org.example.er2petriflow.er.domain.ERDiagram;
+import org.example.er2petriflow.er.domain.Entity;
 import org.example.er2petriflow.generated.petriflow.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,8 +30,30 @@ public class ConverterTests {
         Optional<ERDiagram> result = importer.importDiagram(getTestFile("SingleEntity"));
         assertTrue(result.isPresent());
 
+        ERDiagram diagram = result.get();
+        assertNotNull(diagram.getEntities());
+        List<Entity> entities = diagram.getEntities();
+        assertEquals(1, entities.size());
+        Entity entity = entities.get(0);
+
         List<Document> petriflows = converter.convertToPetriflows(result.get());
         assertNotNull(petriflows);
         assertEquals(1, petriflows.size());
+
+        Document petriflow = petriflows.get(0);
+
+        assertFalse(petriflow.isAnonymousRole());
+        assertTrue(petriflow.isDefaultRole());
+        assertNotNull(petriflow.getId());
+        assertNotNull(petriflow.getTitle());
+        assertNotNull(petriflow.getTitle().getValue());
+        assertEquals(entity.getName(), petriflow.getTitle().getValue());
+
+        assertNotNull(entity.getAttributes());
+        assertEquals(2, entity.getAttributes().size());
+        assertNotNull(petriflow.getData());
+        assertEquals(2, petriflow.getData().size());
+
+
     }
 }
