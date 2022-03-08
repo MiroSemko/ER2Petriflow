@@ -1,13 +1,19 @@
 package org.example.er2petriflow.er.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
-@AllArgsConstructor
 public class Attribute {
 
-    private String name;
-    private AttributeType type;
+    private final String name;
+    private final AttributeType type;
 
+    @Setter
+    private String variableIdentifier;
+
+    public Attribute(String name, AttributeType type) {
+        this.name = name;
+        this.type = type;
+    }
 }
