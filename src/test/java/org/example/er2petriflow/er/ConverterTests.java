@@ -1,14 +1,19 @@
 package org.example.er2petriflow.er;
 
+import org.example.er2petriflow.er.domain.Attribute;
 import org.example.er2petriflow.er.domain.ERDiagram;
 import org.example.er2petriflow.er.domain.Entity;
+import org.example.er2petriflow.generated.petriflow.Data;
 import org.example.er2petriflow.generated.petriflow.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.example.er2petriflow.er.TestHelper.getTestFile;
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,10 +55,26 @@ public class ConverterTests {
         assertEquals(entity.getName(), petriflow.getTitle().getValue());
 
         assertNotNull(entity.getAttributes());
-        assertEquals(2, entity.getAttributes().size());
+        Map<String, Attribute> attributeMap = entity.getAttributes().stream().collect(Collectors.toMap(Attribute::getVariableIdentifier, Function.identity()));
+
         assertNotNull(petriflow.getData());
-        assertEquals(2, petriflow.getData().size());
+        assertEquals(attributeMap.size(), petriflow.getData().size());
 
+        for (Data dataVariable : petriflow.getData()) {
+            assertNotNull(dataVariable);
 
+            Attribute attribute = attributeMap.remove(dataVariable.getId());
+
+            assertNotNull(attribute);
+            assertNotNull(dataVariable.getTitle());
+            assertNotNull(dataVariable.getTitle().getValue());
+            assertEquals(attribute.getName(), dataVariable.getTitle().getValue());
+            assertNotNull(dataVariable.getType());
+            assertNotNull(attribute.getType());
+            assertEquals(attribute.getType().getMapping(), dataVariable.getType());
+        }
+
+        assertNotNull(petriflow.getTransition());
+        assertEquals(5, petriflow.getTransition().size());
     }
 }
