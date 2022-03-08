@@ -21,6 +21,7 @@ public class Converter {
     protected static final int CELL_HEIGHT = 40;
 
     protected Role systemRole;
+    protected int arcCounter;
 
     public List<Document> convertToPetriflows(ERDiagram diagram) {
         List<Document> result = convertEntities(diagram.getEntities());
@@ -75,6 +76,7 @@ public class Converter {
     }
 
     protected void createWorkflow(Document petriflow) {
+        // petri net
         Place p1 = createPlace("p1", 0, 2, 1);
         Place p2 = createPlace("p2", 4, 2, 0);
         addPlaces(petriflow, p1, p2);
@@ -84,7 +86,20 @@ public class Converter {
         Transition t4 = createTransition("t4", "Delete", 6, 4);
         Transition layout = createTransition("layout", 2, 0);
         addTransitions(petriflow, t1, t2, t3, t4, layout);
+        this.arcCounter = 0;
+        addArc(petriflow, p1, t1, ArcType.REGULAR);
+        addArc(petriflow, t1, p2);
+        addArc(petriflow, p2, t2, ArcType.READ);
+        addArc(petriflow, p2, t3, ArcType.READ);
+        addArc(petriflow, p2, t4, ArcType.READ);
 
+        // roles
+        RoleRef roleRef = new RoleRef();
+        roleRef.setId(SYSTEM_ROLE_ID);
+        Logic logic = new Logic();
+        logic.setPerform(true);
+        roleRef.setLogic(logic);
+        layout.getRoleRef().add(roleRef);
     }
 
     protected Place createPlace(String id, int x, int y, int marking) {
@@ -119,6 +134,24 @@ public class Converter {
 
     protected void addTransitions(Document pn, Transition... transitions) {
         pn.getTransition().addAll(List.of(transitions));
+    }
+
+    protected void addArc(Document pn, Place source, Transition destination, ArcType type) {
+        addArc(pn, source.getId(), destination.getId(), type);
+    }
+
+    protected void addArc(Document pn, Transition source, Place destination) {
+        addArc(pn, source.getId(), destination.getId(), ArcType.REGULAR);
+    }
+
+    protected void addArc(Document pn, String sourceId, String destinationId, ArcType type) {
+        Arc a = new Arc();
+        a.setId("a" + (this.arcCounter++));
+        a.setSourceId(sourceId);
+        a.setDestinationId(destinationId);
+        a.setMultiplicity(1);
+        a.setType(type);
+        pn.getArc().add(a);
     }
 
     protected static I18NStringType i18nWithDefaultValue(String defaultValue) {
