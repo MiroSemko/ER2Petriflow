@@ -6,11 +6,17 @@ import org.example.er2petriflow.er.domain.Entity;
 import org.example.er2petriflow.generated.petriflow.Data;
 import org.example.er2petriflow.generated.petriflow.Document;
 import org.example.er2petriflow.generated.petriflow.I18NStringType;
+import org.example.er2petriflow.generated.petriflow.Role;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Converter {
+
+    public static final String SYSTEM_ROLE_ID = "system";
+    public static final String SYSTEM_ROLE_TITLE = "System";
+
+    protected Role systemRole;
 
     public List<Document> convertToPetriflows(ERDiagram diagram) {
         List<Document> result = convertEntities(diagram.getEntities());
@@ -35,6 +41,7 @@ public class Converter {
         result.setTitle(i18nWithDefaultValue(entity.getName()));
 
         convertAttributes(entity, result);
+        createSystemRole(result);
 
         return result;
     }
@@ -53,6 +60,13 @@ public class Converter {
         result.setType(attribute.getType().getMapping());
 
         return result;
+    }
+
+    protected void createSystemRole(Document petriflow) {
+        this.systemRole = new Role();
+        systemRole.setId(SYSTEM_ROLE_ID);
+        systemRole.setTitle(i18nWithDefaultValue(SYSTEM_ROLE_TITLE));
+        petriflow.getRole().add(systemRole);
     }
 
     protected static I18NStringType i18nWithDefaultValue(String defaultValue) {

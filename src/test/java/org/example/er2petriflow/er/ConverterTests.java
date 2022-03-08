@@ -5,6 +5,7 @@ import org.example.er2petriflow.er.domain.ERDiagram;
 import org.example.er2petriflow.er.domain.Entity;
 import org.example.er2petriflow.generated.petriflow.Data;
 import org.example.er2petriflow.generated.petriflow.Document;
+import org.example.er2petriflow.generated.petriflow.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -73,6 +74,15 @@ public class ConverterTests {
             assertNotNull(attribute.getType());
             assertEquals(attribute.getType().getMapping(), dataVariable.getType());
         }
+
+        assertNotNull(petriflow.getRole());
+        assertEquals(1, petriflow.getRole().size());
+        Role role = petriflow.getRole().get(0);
+        assertNotNull(role);
+        assertEquals(Converter.SYSTEM_ROLE_ID, role.getId());
+        assertNotNull(role.getTitle());
+        assertNotNull(role.getTitle().getValue());
+        assertEquals(Converter.SYSTEM_ROLE_TITLE, role.getTitle().getValue());
 
         assertNotNull(petriflow.getTransition());
         assertEquals(5, petriflow.getTransition().size());
