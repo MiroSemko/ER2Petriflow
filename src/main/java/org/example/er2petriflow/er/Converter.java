@@ -100,6 +100,9 @@ public class Converter {
         logic.setPerform(true);
         roleRef.setLogic(logic);
         layout.getRoleRef().add(roleRef);
+
+        // Data refs
+        referenceAllData(petriflow, layout);
     }
 
     protected Place createPlace(String id, int x, int y, int marking) {
@@ -152,6 +155,25 @@ public class Converter {
         a.setMultiplicity(1);
         a.setType(type);
         pn.getArc().add(a);
+    }
+
+    protected void referenceAllData(Document pn, Transition t) {
+        DataGroup dataGroup = new DataGroup();
+        dataGroup.setLayout(LayoutType.LEGACY);
+        for (Data data : pn.getData()) {
+            DataRef ref = createDataRef(data);
+            dataGroup.getDataRef().add(ref);
+        }
+        t.getDataGroup().add(dataGroup);
+    }
+
+    protected DataRef createDataRef(Data data) {
+        DataRef result = new DataRef();
+        result.setId(data.getId());
+        Logic logic = new Logic();
+        logic.getBehavior().add(Behavior.EDITABLE);
+        result.setLogic(logic);
+        return result;
     }
 
     protected static I18NStringType i18nWithDefaultValue(String defaultValue) {
