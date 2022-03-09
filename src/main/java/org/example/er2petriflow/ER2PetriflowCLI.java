@@ -17,7 +17,7 @@ public class ER2PetriflowCLI {
 
     public static void main(String[] args) {
         String inputPath;
-        String outputPath = "." + File.pathSeparator;
+        String outputPath = "." + File.separator;
 
         if (args.length < 1) {
             System.out.println("Please enter at least one argument: <input-file-path> [output-file-path]");
