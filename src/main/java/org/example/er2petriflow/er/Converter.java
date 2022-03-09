@@ -15,6 +15,8 @@ public class Converter {
     public static final String SYSTEM_ROLE_ID = "system";
     public static final String SYSTEM_ROLE_TITLE = "System";
 
+    public static final String LAYOUT_TRANSITION_ID = "layout";
+
     protected static final int VERTICAL_OFFSET = 20;
     protected static final int HORIZONTAL_OFFSET = 20;
     protected static final int CELL_WIDTH = 40;
@@ -84,7 +86,7 @@ public class Converter {
         Transition t2 = createTransition("t2", "Read", 6, 0);
         Transition t3 = createTransition("t3", "Update", 6, 2);
         Transition t4 = createTransition("t4", "Delete", 6, 4);
-        Transition layout = createTransition("layout", 2, 0);
+        Transition layout = createTransition(LAYOUT_TRANSITION_ID, 2, 0);
         addTransitions(petriflow, t1, t2, t3, t4, layout);
         this.arcCounter = 0;
         addArc(petriflow, p1, t1, ArcType.REGULAR);
@@ -160,6 +162,7 @@ public class Converter {
     protected void referenceAllData(Document pn, Transition t) {
         DataGroup dataGroup = new DataGroup();
         dataGroup.setLayout(LayoutType.LEGACY);
+        dataGroup.setId("dg");
         for (Data data : pn.getData()) {
             DataRef ref = createDataRef(data);
             dataGroup.getDataRef().add(ref);

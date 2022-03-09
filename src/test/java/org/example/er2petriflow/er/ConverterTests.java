@@ -3,9 +3,7 @@ package org.example.er2petriflow.er;
 import org.example.er2petriflow.er.domain.Attribute;
 import org.example.er2petriflow.er.domain.ERDiagram;
 import org.example.er2petriflow.er.domain.Entity;
-import org.example.er2petriflow.generated.petriflow.Data;
-import org.example.er2petriflow.generated.petriflow.Document;
-import org.example.er2petriflow.generated.petriflow.Role;
+import org.example.er2petriflow.generated.petriflow.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -90,5 +88,18 @@ public class ConverterTests {
         assertEquals(2, petriflow.getPlace().size());
         assertNotNull(petriflow.getArc());
         assertEquals(5, petriflow.getArc().size());
+
+        for (Transition t : petriflow.getTransition()) {
+            if (!t.getId().equals(Converter.LAYOUT_TRANSITION_ID)) {
+                continue;
+            }
+            assertNotNull(t.getDataGroup());
+            assertEquals(1, t.getDataGroup().size());
+            DataGroup dataGroup = t.getDataGroup().get(0);
+            assertNotNull(dataGroup);
+            assertNotNull(dataGroup.getId());
+            assertEquals(LayoutType.LEGACY, dataGroup.getLayout());
+            assertEquals(petriflow.getData().size(), dataGroup.getDataRef().size());
+        }
     }
 }
