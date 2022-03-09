@@ -86,5 +86,9 @@ public class ConverterTests {
 
         assertNotNull(petriflow.getTransition());
         assertEquals(5, petriflow.getTransition().size());
+        assertNotNull(petriflow.getPlace());
+        assertEquals(2, petriflow.getPlace().size());
+        assertNotNull(petriflow.getArc());
+        assertEquals(5, petriflow.getArc().size());
     }
 }
