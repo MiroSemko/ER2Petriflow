@@ -134,18 +134,17 @@ public class Converter {
         pn.getPlace().addAll(List.of(places));
     }
 
-    protected Transition createTransition(String id, String label, int x, int y) {
-        Transition t = createTransition(id, x, y);
-        t.setLabel(i18nWithDefaultValue(label));
-        return t;
+    protected Transition createTransition(String id, int x, int y) {
+        return createTransition(id, "", x, y);
     }
 
-    protected Transition createTransition(String id, int x, int y) {
+    protected Transition createTransition(String id, String label, int x, int y) {
         Transition t = new Transition();
         t.setId(id);
         Coordinates pos = transformCoordinates(x, y);
         t.setX(pos.getX());
         t.setY(pos.getY());
+        t.setLabel(i18nWithDefaultValue(label));
         return t;
     }
 
