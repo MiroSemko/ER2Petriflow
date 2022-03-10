@@ -116,7 +116,7 @@ public class Converter {
         petriflow.getData().add(layoutTaskRef);
 
         referenceDataOnTransitions(layoutTaskRef, Behavior.EDITABLE, t1, t3);
-        referenceDataOnTransitions(layoutTaskRef, Behavior.VISIBLE, t2);
+        referenceDataOnTransitions(layoutTaskRef, Behavior.VISIBLE, t2, t4);
     }
 
     protected Place createPlace(String id, int x, int y, int marking) {
@@ -171,9 +171,7 @@ public class Converter {
     }
 
     protected void referenceAllData(Document pn, Transition t) {
-        DataGroup dataGroup = new DataGroup();
-        dataGroup.setLayout(LayoutType.LEGACY);
-        dataGroup.setId("dg");
+        DataGroup dataGroup = createDataGroup();
         for (Data data : pn.getData()) {
             DataRef ref = createDataRef(data);
             dataGroup.getDataRef().add(ref);
@@ -183,9 +181,18 @@ public class Converter {
 
     protected void referenceDataOnTransitions(Data data, Behavior behavior, Transition... transitions) {
         for (Transition t : transitions) {
+            DataGroup dataGroup = createDataGroup();
             DataRef dataRef = createDataRef(data, behavior);
-            t.getDataRef().add(dataRef);
+            dataGroup.getDataRef().add(dataRef);
+            t.getDataGroup().add(dataGroup);
         }
+    }
+
+    protected DataGroup createDataGroup() {
+        DataGroup dataGroup = new DataGroup();
+        dataGroup.setLayout(LayoutType.LEGACY);
+        dataGroup.setId("dg");
+        return dataGroup;
     }
 
     protected DataRef createDataRef(Data data) {
