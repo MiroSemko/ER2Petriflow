@@ -57,12 +57,19 @@ public class ConverterTests {
         Map<String, Attribute> attributeMap = entity.getAttributes().stream().collect(Collectors.toMap(Attribute::getVariableIdentifier, Function.identity()));
 
         assertNotNull(petriflow.getData());
-        assertEquals(attributeMap.size(), petriflow.getData().size());
+        assertEquals(attributeMap.size() + 1, petriflow.getData().size());
 
         for (Data dataVariable : petriflow.getData()) {
             assertNotNull(dataVariable);
 
             Attribute attribute = attributeMap.remove(dataVariable.getId());
+
+            if (attribute == null) {
+                assertEquals(Converter.LAYOUT_TASK_REF_ID, dataVariable.getId());
+                assertNotNull(dataVariable.getType());
+                assertEquals(DataType.TASK_REF, dataVariable.getType());
+                continue;
+            }
 
             assertNotNull(attribute);
             assertNotNull(dataVariable.getTitle());
@@ -90,16 +97,23 @@ public class ConverterTests {
         assertEquals(5, petriflow.getArc().size());
 
         for (Transition t : petriflow.getTransition()) {
-            if (!t.getId().equals(Converter.LAYOUT_TRANSITION_ID)) {
-                continue;
-            }
+            assertNotNull(t.getLabel());
             assertNotNull(t.getDataGroup());
             assertEquals(1, t.getDataGroup().size());
             DataGroup dataGroup = t.getDataGroup().get(0);
             assertNotNull(dataGroup);
             assertNotNull(dataGroup.getId());
             assertEquals(LayoutType.LEGACY, dataGroup.getLayout());
-            assertEquals(petriflow.getData().size(), dataGroup.getDataRef().size());
+
+            if (t.getId().equals(Converter.LAYOUT_TRANSITION_ID)) {
+                assertEquals(entity.getAttributes().size(), dataGroup.getDataRef().size());
+            } else {
+                assertNotNull(t.getDataGroup());
+                assertEquals(1, dataGroup.getDataRef().size());
+                DataRef ref = dataGroup.getDataRef().get(0);
+                assertNotNull(ref);
+                assertEquals(Converter.LAYOUT_TASK_REF_ID, ref.getId());
+            }
         }
     }
 }
