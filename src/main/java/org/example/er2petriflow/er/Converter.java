@@ -16,6 +16,7 @@ public class Converter {
     public static final String SYSTEM_ROLE_TITLE = "System";
 
     public static final String LAYOUT_TRANSITION_ID = "layout";
+    public static final String LAYOUT_TASK_REF_ID = "layoutTaskRef";
 
     protected static final int VERTICAL_OFFSET = 20;
     protected static final int HORIZONTAL_OFFSET = 20;
@@ -105,6 +106,17 @@ public class Converter {
 
         // Data refs
         referenceAllData(petriflow, layout);
+
+        Data layoutTaskRef = new Data();
+        layoutTaskRef.setId(LAYOUT_TASK_REF_ID);
+        layoutTaskRef.setType(DataType.TASK_REF);
+        Init init = new Init();
+        init.setValue(LAYOUT_TRANSITION_ID);
+        layoutTaskRef.setInit(init);
+        petriflow.getData().add(layoutTaskRef);
+
+        referenceDataOnTransitions(layoutTaskRef, Behavior.EDITABLE, t1, t3);
+        referenceDataOnTransitions(layoutTaskRef, Behavior.VISIBLE, t2);
     }
 
     protected Place createPlace(String id, int x, int y, int marking) {
@@ -170,11 +182,22 @@ public class Converter {
         t.getDataGroup().add(dataGroup);
     }
 
+    protected void referenceDataOnTransitions(Data data, Behavior behavior, Transition... transitions) {
+        for (Transition t : transitions) {
+            DataRef dataRef = createDataRef(data, behavior);
+            t.getDataRef().add(dataRef);
+        }
+    }
+
     protected DataRef createDataRef(Data data) {
+        return createDataRef(data, Behavior.EDITABLE);
+    }
+
+    protected DataRef createDataRef(Data data, Behavior behavior) {
         DataRef result = new DataRef();
         result.setId(data.getId());
         Logic logic = new Logic();
-        logic.getBehavior().add(Behavior.EDITABLE);
+        logic.getBehavior().add(behavior);
         result.setLogic(logic);
         return result;
     }
