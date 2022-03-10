@@ -113,6 +113,17 @@ public class ConverterTests {
                 DataRef ref = dataGroup.getDataRef().get(0);
                 assertNotNull(ref);
                 assertEquals(Converter.LAYOUT_TASK_REF_ID, ref.getId());
+
+                if (t.getId().equals(Converter.DELETE_TRANSITION_ID)) {
+                    assertNotNull(t.getEvent());
+                    assertEquals(2, t.getEvent().size());
+                    for (Event e : t.getEvent()) {
+                        assertNotNull(e);
+                        assertNotNull(e.getTitle());
+                        assertNotNull(e.getTitle().getValue());
+                        assertNotNull(e.getType());
+                    }
+                }
             }
         }
     }
