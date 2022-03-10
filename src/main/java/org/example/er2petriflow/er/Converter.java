@@ -18,6 +18,9 @@ public class Converter {
     public static final String LAYOUT_TRANSITION_ID = "layout";
     public static final String LAYOUT_TASK_REF_ID = "layoutTaskRef";
 
+    public static final String DELETE_ASSIGN_EVENT_LABEL = "Delete Instance";
+    public static final String DELETE_FINISH_EVENT_LABEL = "Confirm Deletion";
+
     protected static final int VERTICAL_OFFSET = 20;
     protected static final int HORIZONTAL_OFFSET = 20;
     protected static final int CELL_WIDTH = 40;
@@ -117,6 +120,9 @@ public class Converter {
 
         referenceDataOnTransitions(layoutTaskRef, Behavior.EDITABLE, t1, t3);
         referenceDataOnTransitions(layoutTaskRef, Behavior.VISIBLE, t2, t4);
+
+        // Actions
+        createDeleteCaseAction(t4);
     }
 
     protected Place createPlace(String id, int x, int y, int marking) {
@@ -206,6 +212,30 @@ public class Converter {
         logic.getBehavior().add(behavior);
         result.setLogic(logic);
         return result;
+    }
+
+    protected void createDeleteCaseAction(Transition deleteTransition) {
+        Event assign = createLabeledEvent(EventType.ASSIGN, DELETE_ASSIGN_EVENT_LABEL);
+        Event finish = createLabeledEvent(EventType.FINISH, DELETE_FINISH_EVENT_LABEL);
+
+        Actions actions = new Actions();
+        actions.setPhase(EventPhaseType.POST);
+
+        Action action = new Action();
+        action.setValue("async.run { workflowService.deleteCase(useCase.stringId) }");
+
+        actions.getAction().add(action);
+        finish.getActions().add(actions);
+
+        deleteTransition.getEvent().add(assign);
+        deleteTransition.getEvent().add(finish);
+    }
+
+    protected Event createLabeledEvent(EventType type, String label) {
+        Event event = new Event();
+        event.setType(type);
+        event.setTitle(i18nWithDefaultValue(label));
+        return event;
     }
 
     protected static I18NStringType i18nWithDefaultValue(String defaultValue) {
