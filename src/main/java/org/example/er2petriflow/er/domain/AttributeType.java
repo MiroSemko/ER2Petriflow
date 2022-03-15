@@ -10,7 +10,8 @@ import java.util.Set;
 
 public enum AttributeType {
     TEXT(DataType.TEXT, "text", "string", "varchar"),
-    NUMBER(DataType.NUMBER, "number", "int", "integer", "float", "double");
+    NUMBER(DataType.NUMBER, "number", "int", "integer", "float", "double"),
+    DATE(DataType.DATE, "date");
 
     @Getter
     private final DataType mapping;
