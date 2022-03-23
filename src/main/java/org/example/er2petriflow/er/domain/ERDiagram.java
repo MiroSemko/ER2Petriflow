@@ -13,6 +13,7 @@ public class ERDiagram {
     private final List<Relation> relations;
 
     private int entityCounter = 0;
+    private int relationCounter = 0;
 
     public ERDiagram() {
         this.entities = new ArrayList<>();
@@ -27,6 +28,8 @@ public class ERDiagram {
 
     public void addRelation(Relation relation) {
         relations.add(relation);
+        relationCounter++;
+        relation.setProcessIdentifier("Relation" + relationCounter);
     }
 
 }

@@ -3,6 +3,7 @@ package org.example.er2petriflow.er;
 import org.example.er2petriflow.er.domain.Attribute;
 import org.example.er2petriflow.er.domain.ERDiagram;
 import org.example.er2petriflow.er.domain.Entity;
+import org.example.er2petriflow.er.domain.Relation;
 import org.example.er2petriflow.generated.petriflow.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -126,5 +127,23 @@ public class ConverterTests {
                 }
             }
         }
+    }
+
+    @Test
+    @DisplayName("Should convert single relation")
+    void convertSingleRelation() {
+        Optional<ERDiagram> result = importer.importDiagram(getTestFile("SingleRelation"));
+        assertTrue(result.isPresent());
+
+        ERDiagram diagram = result.get();
+        assertNotNull(diagram.getEntities());
+        List<Entity> entities = diagram.getEntities();
+        assertEquals(2, entities.size());
+        List<Relation> relations = diagram.getRelations();
+        assertEquals(1, relations.size());
+
+        List<Document> petriflows = converter.convertToPetriflows(result.get());
+        assertNotNull(petriflows);
+        assertEquals(3, petriflows.size());
     }
 }

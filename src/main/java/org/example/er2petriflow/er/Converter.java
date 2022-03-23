@@ -5,9 +5,12 @@ import lombok.Getter;
 import org.example.er2petriflow.er.domain.Attribute;
 import org.example.er2petriflow.er.domain.ERDiagram;
 import org.example.er2petriflow.er.domain.Entity;
+import org.example.er2petriflow.er.domain.Relation;
 import org.example.er2petriflow.generated.petriflow.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Converter {
@@ -30,8 +33,12 @@ public class Converter {
     protected Role systemRole;
     protected int arcCounter;
 
+    protected Map<String, Document> entityMap;
+
     public List<Document> convertToPetriflows(ERDiagram diagram) {
+        entityMap = new HashMap<>();
         List<Document> result = convertEntities(diagram.getEntities());
+        result.addAll(convertRelations(diagram.getRelations()));
         return result;
     }
 
@@ -42,21 +49,36 @@ public class Converter {
     protected Document convertEntity(Entity entity) {
         Document result = new Document();
 
-        result.setDefaultRole(true);
-        result.setAnonymousRole(false);
-        result.setVersion("1.0.0");
-        result.setInitials("ENT");
-
-        entity.setProcessIdentifier(entity.getProcessIdentifier());
-
-        result.setId(entity.getProcessIdentifier());
-        result.setTitle(i18nWithDefaultValue(entity.getName()));
+        setDocumentMetadata(result, "ENT", entity.getProcessIdentifier(), entity.getName());
 
         convertAttributes(entity, result);
         createSystemRole(result);
         createWorkflow(result);
 
+        entityMap.put(entity.getProcessIdentifier(), result);
+
         return result;
+    }
+
+    protected List<Document> convertRelations(List<Relation> relations) {
+        return relations.stream().map(this::convertRelation).collect(Collectors.toList());
+    }
+
+    protected Document convertRelation(Relation relation) {
+        Document result = new Document();
+
+        setDocumentMetadata(result, "REL", relation.getProcessIdentifier(), relation.getName());
+
+        return result;
+    }
+
+    protected void setDocumentMetadata(Document net, String initials, String identifier, String title) {
+        net.setDefaultRole(true);
+        net.setAnonymousRole(false);
+        net.setVersion("1.0.0");
+        net.setInitials(initials);
+        net.setId(identifier);
+        net.setTitle(i18nWithDefaultValue(title));
     }
 
     protected void convertAttributes(Entity entity, Document result) {
