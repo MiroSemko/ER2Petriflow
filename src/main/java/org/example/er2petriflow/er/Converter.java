@@ -25,6 +25,10 @@ public class Converter {
     public static final String DELETE_ASSIGN_EVENT_LABEL = "Delete Instance";
     public static final String DELETE_FINISH_EVENT_LABEL = "Confirm Deletion";
 
+    public static final String PROCESS_PREFIX_FIELD_ID = "prefix";
+
+    protected static final String ENTITY_SELECTION_PREFIX = "entity";
+
     protected static final int VERTICAL_OFFSET = 20;
     protected static final int HORIZONTAL_OFFSET = 20;
     protected static final int CELL_WIDTH = 40;
@@ -51,9 +55,9 @@ public class Converter {
 
         setDocumentMetadata(result, "ENT", entity.getProcessIdentifier(), entity.getName());
 
-        convertAttributes(entity, result);
+        convertEntityAttributes(entity, result);
         createSystemRole(result);
-        createWorkflow(result);
+        createEntityWorkflow(result);
 
         entityMap.put(entity.getProcessIdentifier(), result);
 
@@ -68,6 +72,8 @@ public class Converter {
         Document result = new Document();
 
         setDocumentMetadata(result, "REL", relation.getProcessIdentifier(), relation.getName());
+        createRelationAttributes(relation, result);
+        createRelationWorkflow(result);
 
         return result;
     }
@@ -81,18 +87,50 @@ public class Converter {
         net.setTitle(i18nWithDefaultValue(title));
     }
 
-    protected void convertAttributes(Entity entity, Document result) {
+    protected void convertEntityAttributes(Entity entity, Document result) {
         result.getData().addAll(
                 entity.getAttributes().stream().map(this::convertAttribute).collect(Collectors.toList())
         );
     }
 
+    protected void createRelationAttributes(Relation relation, Document result) {
+        if (relation.getConnections().size() != 2) {
+            throw new UnsupportedRelationException("Only binary relationships are currently supported!", relation);
+        }
+
+        char suffix = 'A';
+        for (Entity entity : relation.getConnections()) {
+            Data selector = createForRelation(entity, ENTITY_SELECTION_PREFIX + suffix);
+            result.getData().add(selector);
+            suffix++;
+        }
+
+        // for demo.netgrif.com group id resolution
+        result.getData().add(createDataVariable(PROCESS_PREFIX_FIELD_ID, "", DataType.TEXT));
+    }
+
     protected Data convertAttribute(Attribute attribute) {
+        return createDataVariable(
+                attribute.getVariableIdentifier(),
+                attribute.getName(),
+                attribute.getType().getMapping()
+        );
+    }
+
+    protected Data createForRelation(Entity entity, String fieldId) {
+        return createDataVariable(
+                fieldId,
+                entity.getName(),
+                DataType.ENUMERATION_MAP
+        );
+    }
+
+    protected Data createDataVariable(String id, String title, DataType type) {
         Data result = new Data();
 
-        result.setId(attribute.getVariableIdentifier());
-        result.setTitle(i18nWithDefaultValue(attribute.getName()));
-        result.setType(attribute.getType().getMapping());
+        result.setId(id);
+        result.setTitle(i18nWithDefaultValue(title));
+        result.setType(type);
 
         return result;
     }
@@ -104,7 +142,7 @@ public class Converter {
         petriflow.getRole().add(systemRole);
     }
 
-    protected void createWorkflow(Document petriflow) {
+    protected void createEntityWorkflow(Document petriflow) {
         // petri net
         Place p1 = createPlace("p1", 0, 2, 1);
         Place p2 = createPlace("p2", 4, 2, 0);
@@ -146,6 +184,10 @@ public class Converter {
 
         // Actions
         createDeleteCaseAction(t4);
+    }
+
+    protected void createRelationWorkflow(Document petriflow) {
+
     }
 
     protected Place createPlace(String id, int x, int y, int marking) {
