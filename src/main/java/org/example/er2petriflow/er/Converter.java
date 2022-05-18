@@ -2,6 +2,7 @@ package org.example.er2petriflow.er;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.example.er2petriflow.er.converter.CrudNet;
 import org.example.er2petriflow.er.domain.Attribute;
 import org.example.er2petriflow.er.domain.ERDiagram;
 import org.example.er2petriflow.er.domain.Entity;
@@ -143,14 +144,22 @@ public class Converter {
     }
 
     protected void createEntityWorkflow(Document petriflow) {
-        // petri net
+        createCrudNet(petriflow, "instance");
+    }
+
+    protected void createRelationWorkflow(Document petriflow) {
+        CrudNet crudNet = createCrudNet(petriflow, "relation");
+    }
+
+    protected CrudNet createCrudNet(Document petriflow, String suffix) {
+        // Petri net
         Place p1 = createPlace("p1", 0, 2, 1);
         Place p2 = createPlace("p2", 4, 2, 0);
         addPlaces(petriflow, p1, p2);
-        Transition t1 = createTransition("t1", "Create", 2, 2);
-        Transition t2 = createTransition("t2", "Read", 6, 0);
-        Transition t3 = createTransition("t3", "Update", 6, 2);
-        Transition t4 = createTransition(DELETE_TRANSITION_ID, "Delete", 6, 4);
+        Transition t1 = createTransition("t1", "Create " + suffix, 2, 2);
+        Transition t2 = createTransition("t2", "Read " + suffix, 6, 0);
+        Transition t3 = createTransition("t3", "Update " + suffix, 6, 2);
+        Transition t4 = createTransition(DELETE_TRANSITION_ID, "Delete " + suffix, 6, 4);
         Transition layout = createTransition(LAYOUT_TRANSITION_ID, 2, 0);
         addTransitions(petriflow, t1, t2, t3, t4, layout);
         this.arcCounter = 0;
@@ -184,10 +193,8 @@ public class Converter {
 
         // Actions
         createDeleteCaseAction(t4);
-    }
 
-    protected void createRelationWorkflow(Document petriflow) {
-
+        return new CrudNet(t1, t2, t3, t4, p2);
     }
 
     protected Place createPlace(String id, int x, int y, int marking) {
@@ -243,7 +250,7 @@ public class Converter {
 
     protected void referenceAllData(Document pn, Transition t) {
         DataGroup dataGroup = createDataGroup();
-        for (Data data : pn.getData()) {
+        for (Data data : pn.getData().stream().filter(d -> !d.getId().equals(PROCESS_PREFIX_FIELD_ID)).collect(Collectors.toList())) {
             DataRef ref = createDataRef(data);
             dataGroup.getDataRef().add(ref);
         }
