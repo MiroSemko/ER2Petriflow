@@ -9,6 +9,10 @@ import java.util.Set;
 @Getter
 public class Relation {
 
+    @Getter
+    @Setter
+    private Long id;
+
     @Setter
     private String processIdentifier;
 

@@ -8,9 +8,7 @@ import org.example.er2petriflow.er.domain.Entity;
 import org.example.er2petriflow.er.domain.Relation;
 import org.example.er2petriflow.generated.petriflow.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Converter {
@@ -41,16 +39,17 @@ public class Converter {
 
     public List<Document> convertToPetriflows(ERDiagram diagram) {
         entityMap = new HashMap<>();
-        List<Document> result = convertEntities(diagram.getEntities());
-        result.addAll(convertRelations(diagram.getRelations()));
+        Map<Long, Document> entities = convertEntities(diagram.getEntities());
+        var result = convertRelations(diagram.getRelations(), entities);
+        result.addAll(entities.values());
         return result;
     }
 
-    protected List<Document> convertEntities(List<Entity> entities) {
-        return entities.stream().map(this::convertEntity).collect(Collectors.toList());
+    protected Map<Long, Document> convertEntities(Collection<Entity> entities) {
+        return entities.stream().map(this::convertEntity).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    protected Document convertEntity(Entity entity) {
+    protected AbstractMap.Entry<Long, Document> convertEntity(Entity entity) {
         Document result = new Document();
 
         setDocumentMetadata(result, "ENT", entity.getProcessIdentifier(), entity.getName());
@@ -61,19 +60,19 @@ public class Converter {
 
         entityMap.put(entity.getProcessIdentifier(), result);
 
-        return result;
+        return new AbstractMap.SimpleEntry<>(entity.getId(), result);
     }
 
-    protected List<Document> convertRelations(List<Relation> relations) {
-        return relations.stream().map(this::convertRelation).collect(Collectors.toList());
+    protected List<Document> convertRelations(Collection<Relation> relations, Map<Long, Document> entities) {
+        return relations.stream().map(r -> convertRelation(r, entities)).collect(Collectors.toList());
     }
 
-    protected Document convertRelation(Relation relation) {
+    protected Document convertRelation(Relation relation, Map<Long, Document> entities) {
         Document result = new Document();
 
         setDocumentMetadata(result, "REL", relation.getProcessIdentifier(), relation.getName());
         createRelationAttributes(relation, result);
-        createRelationWorkflow(result);
+        createRelationWorkflow(result, entities);
 
         return result;
     }
@@ -146,7 +145,7 @@ public class Converter {
         createCrudNet(petriflow, "instance");
     }
 
-    protected void createRelationWorkflow(Document petriflow) {
+    protected void createRelationWorkflow(Document petriflow, Map<Long, Document> entities) {
         CrudNet crudNet = createCrudNet(petriflow, "relation");
     }
 

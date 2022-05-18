@@ -2,34 +2,44 @@ package org.example.er2petriflow.er.domain;
 
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ERDiagram {
 
-    @Getter
-    private final List<Entity> entities;
-    @Getter
-    private final List<Relation> relations;
+    private final HashMap<Long, Entity> entities;
+    private final HashMap<Long, Relation> relations;
 
-    private int entityCounter = 0;
-    private int relationCounter = 0;
+    private Long entityCounter = 0L;
+    private Long relationCounter = 0L;
 
     public ERDiagram() {
-        this.entities = new ArrayList<>();
-        this.relations = new ArrayList<>();
+        this.entities = new HashMap<>();
+        this.relations = new HashMap<>();
     }
 
     public void addEntity(Entity entity) {
-        entities.add(entity);
         entityCounter++;
+        entity.setId(entityCounter);
         entity.setProcessIdentifier("Entity" + entityCounter);
+        entities.put(entityCounter, entity);
     }
 
     public void addRelation(Relation relation) {
-        relations.add(relation);
         relationCounter++;
+        relation.setId(relationCounter);
         relation.setProcessIdentifier("Relation" + relationCounter);
+        relations.put(relationCounter, relation);
     }
 
+    public List<Entity> getEntities() {
+        return new ArrayList<>(entities.values());
+    }
+
+    public List<Relation> getRelations() {
+        return new ArrayList<>(relations.values());
+    }
+
+    public Map<Long, Entity> getEntityMap() {
+        return this.entities;
+    }
 }

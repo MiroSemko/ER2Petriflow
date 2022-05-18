@@ -9,6 +9,10 @@ import java.util.List;
 public class Entity {
 
     @Getter
+    @Setter
+    private Long id;
+
+    @Getter
     private final String name;
     @Getter
     private final List<Attribute> attributes;
