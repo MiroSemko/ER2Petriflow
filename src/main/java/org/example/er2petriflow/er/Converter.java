@@ -1,7 +1,6 @@
 package org.example.er2petriflow.er;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import org.example.er2petriflow.er.converter.Coordinates;
 import org.example.er2petriflow.er.converter.CrudNet;
 import org.example.er2petriflow.er.domain.Attribute;
 import org.example.er2petriflow.er.domain.ERDiagram;
@@ -318,12 +317,5 @@ public class Converter {
 
     protected static Coordinates transformCoordinates(int x, int y) {
         return new Coordinates((x * CELL_WIDTH) + HORIZONTAL_OFFSET, (y * CELL_HEIGHT) + VERTICAL_OFFSET);
-    }
-
-    @Getter
-    @AllArgsConstructor
-    protected static class Coordinates {
-        private int x;
-        private int y;
     }
 }
