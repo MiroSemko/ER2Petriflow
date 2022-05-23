@@ -27,6 +27,29 @@ public class Converter {
 
     protected static final String ENTITY_SELECTION_PREFIX = "entity";
 
+    protected static final String FILL_OPTIONS_FUNCTION_TEMPLATE = """
+(optionField, prefixField) -> {
+    let cases = findCases({ it.processIdentifier.eq(prefixField.value + %s) });
+    change optionField options { cases.collectEntries(([it.stringId, it.title])) }
+}
+""";
+    protected static final String RESOLVE_PREFIX_ACTION_TEMPLATE = """
+prefix: f.%s;
+
+String[] splitProcessIdentifier = useCase.processIdentifier.split("_", 2)
+if (splitProcessIdentifier.length < 2) {
+    change prefix value { ""; }
+    return;
+}
+
+change prefix value {
+    if (splitProcessIdentifier[0].matches("[0-9a-f]{24}")) {
+        return splitProcessIdentifier[0] + "_";
+    }
+    return "";
+}
+""";
+
     protected static final int VERTICAL_OFFSET = 20;
     protected static final int HORIZONTAL_OFFSET = 20;
     protected static final int CELL_WIDTH = 40;
@@ -72,7 +95,7 @@ public class Converter {
 
         setDocumentMetadata(result, "REL", relation.getProcessIdentifier(), relation.getName());
         createRelationAttributes(relation, result);
-        createRelationWorkflow(result, entities);
+        createRelationWorkflow(relation, result, entities);
 
         return result;
     }
@@ -145,8 +168,19 @@ public class Converter {
         createCrudNet(petriflow, "instance");
     }
 
-    protected void createRelationWorkflow(Document petriflow, Map<Long, Document> entities) {
+    protected void createRelationWorkflow(Relation relation, Document petriflow, Map<Long, Document> entities) {
         CrudNet crudNet = createCrudNet(petriflow, "relation");
+
+        var ordering = new ArrayList<>(relation.getConnections());
+
+        // Functions
+        Function fillA = createFunction("fillA", String.format(FILL_OPTIONS_FUNCTION_TEMPLATE, entities.get(ordering.get(0).getId())));
+        Function fillB = createFunction("fillB", String.format(FILL_OPTIONS_FUNCTION_TEMPLATE, entities.get(ordering.get(1).getId())));
+
+        petriflow.getFunction().addAll(List.of(fillA, fillB));
+
+        // prefix
+        createDemoPrefixResolutionAction(petriflow);
     }
 
     protected CrudNet createCrudNet(Document petriflow, String suffix) {
@@ -288,17 +322,23 @@ public class Converter {
         Event assign = createLabeledEvent(EventType.ASSIGN, DELETE_ASSIGN_EVENT_LABEL);
         Event finish = createLabeledEvent(EventType.FINISH, DELETE_FINISH_EVENT_LABEL);
 
-        Actions actions = new Actions();
-        actions.setPhase(EventPhaseType.POST);
-
         Action action = new Action();
         action.setValue("async.run { workflowService.deleteCase(useCase.stringId) }");
 
-        actions.getAction().add(action);
-        finish.getActions().add(actions);
+        addActions(finish, EventPhaseType.POST, action);
 
         deleteTransition.getEvent().add(assign);
         deleteTransition.getEvent().add(finish);
+    }
+
+    protected void createDemoPrefixResolutionAction(Document petriflow) {
+        CaseEvent create = createCaseEvent(CaseEventType.CREATE);
+
+        Action action = new Action();
+        action.setValue(String.format(RESOLVE_PREFIX_ACTION_TEMPLATE, PROCESS_PREFIX_FIELD_ID));
+
+        addActions(create, EventPhaseType.POST, action);
+        petriflow.getCaseEvents().getEvent().add(create);
     }
 
     protected Event createLabeledEvent(EventType type, String label) {
@@ -306,6 +346,27 @@ public class Converter {
         event.setType(type);
         event.setTitle(i18nWithDefaultValue(label));
         return event;
+    }
+
+    protected void addActions(BaseEvent event, EventPhaseType phase, Action... actions) {
+        Actions wrapper = new Actions();
+        wrapper.setPhase(phase);
+        wrapper.getAction().addAll(List.of(actions));
+        event.getActions().add(wrapper);
+    }
+
+    protected CaseEvent createCaseEvent(CaseEventType type) {
+        CaseEvent event = new CaseEvent();
+        event.setType(type);
+        return event;
+    }
+
+    protected Function createFunction(String name, String body) {
+        Function result = new Function();
+        result.setName(name);
+        result.setValue(body);
+        result.setScope(Scope.PROCESS);
+        return result;
     }
 
     protected static I18NStringType i18nWithDefaultValue(String defaultValue) {
