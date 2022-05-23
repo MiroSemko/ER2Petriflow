@@ -338,6 +338,11 @@ change prefix value {
         action.setValue(String.format(RESOLVE_PREFIX_ACTION_TEMPLATE, PROCESS_PREFIX_FIELD_ID));
 
         addActions(create, EventPhaseType.POST, action);
+
+        if (petriflow.getCaseEvents() == null) {
+            var caseEvents = new CaseEvents();
+            petriflow.setCaseEvents(caseEvents);
+        }
         petriflow.getCaseEvents().getEvent().add(create);
     }
 
