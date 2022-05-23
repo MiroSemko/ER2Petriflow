@@ -29,7 +29,7 @@ public class Converter {
 
     protected static final String FILL_OPTIONS_FUNCTION_TEMPLATE = """
 (optionField, prefixField) -> {
-    let cases = findCases({ it.processIdentifier.eq(prefixField.value + %s) });
+    let cases = findCases({ it.processIdentifier.eq(prefixField.value + "%s") });
     change optionField options { cases.collectEntries(([it.stringId, it.title])) }
 }
 """;
@@ -174,8 +174,8 @@ change prefix value {
         var ordering = new ArrayList<>(relation.getConnections());
 
         // Functions
-        Function fillA = createFunction("fillA", String.format(FILL_OPTIONS_FUNCTION_TEMPLATE, entities.get(ordering.get(0).getId())));
-        Function fillB = createFunction("fillB", String.format(FILL_OPTIONS_FUNCTION_TEMPLATE, entities.get(ordering.get(1).getId())));
+        Function fillA = createFunction("fillA", String.format(FILL_OPTIONS_FUNCTION_TEMPLATE, entities.get(ordering.get(0).getId()).getId()));
+        Function fillB = createFunction("fillB", String.format(FILL_OPTIONS_FUNCTION_TEMPLATE, entities.get(ordering.get(1).getId()).getId()));
 
         petriflow.getFunction().addAll(List.of(fillA, fillB));
 
