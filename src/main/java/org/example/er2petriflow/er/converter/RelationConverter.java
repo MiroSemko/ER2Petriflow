@@ -14,6 +14,7 @@ import static org.example.er2petriflow.er.converter.PetriflowUtils.PROCESS_PREFI
 public class RelationConverter {
 
     protected static final String ENTITY_SELECTION_PREFIX = "entity";
+    protected static final String OLD_VALUE_PREFIX = "oldValue";
 
     protected static final String FILL_OPTIONS_FUNCTION_TEMPLATE = """
 { optionField, prefixField ->
@@ -44,6 +45,13 @@ change prefix value {
     }
     return "";
 }
+""";
+
+    private static final String SAVE_PREVIOUS_VALUE_ACTION_TEMPLATE = """
+current: f.this,
+old: f.%s;
+
+change old value { current.value }
 """;
 
     private final Relation relation;
@@ -93,12 +101,18 @@ change prefix value {
     protected void createRelationWorkflow() {
         CrudNet crudNet = createCrudNet(result, "relation");
 
-        // Functions
         char suffix = 'A';
         for (EntityContext context : entities) {
+            // Functions
             Function f = createFunction("fill" + suffix, String.format(FILL_OPTIONS_FUNCTION_TEMPLATE, context.getEntity().getProcessIdentifier()));
             context.setFillFunction(f);
             result.getFunction().add(f);
+
+            // Non-referenced data
+            Data old = createForRelation(context.getEntity(), OLD_VALUE_PREFIX + suffix);
+            context.setOldValueField(old);
+            result.getData().add(old);
+
             suffix++;
         }
 
@@ -106,12 +120,16 @@ change prefix value {
         // prefix
         addCreateCaseAction(result, String.format(RESOLVE_PREFIX_ACTION_TEMPLATE, PROCESS_PREFIX_FIELD_ID));
 
-        // fill selector options on getData event
+        // selector actions
         for (EntityContext context: entities) {
             addDataEventAction(context.getSelectorField(), DataEventType.GET, EventPhaseType.POST, String.format(
                     FILL_OPTIONS_ACTION_TEMPLATE,
                     PROCESS_PREFIX_FIELD_ID,
                     context.getFillFunction().getName()
+            ));
+            addDataEventAction(context.getSelectorField(), DataEventType.SET, EventPhaseType.PRE, String.format(
+                    SAVE_PREVIOUS_VALUE_ACTION_TEMPLATE,
+                    context.getOldValueField().getId()
             ));
         }
     }

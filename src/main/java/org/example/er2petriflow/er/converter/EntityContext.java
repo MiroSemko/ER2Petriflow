@@ -13,6 +13,8 @@ public class EntityContext {
     @Setter
     private Data selectorField;
     @Setter
+    private Data oldValueField;
+    @Setter
     private Function fillFunction;
 
     public EntityContext(Entity entity) {
