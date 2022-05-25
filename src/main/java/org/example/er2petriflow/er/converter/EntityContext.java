@@ -11,7 +11,7 @@ public class EntityContext {
 
     private final Entity entity;
     @Setter
-    private Data input;
+    private Data selectorField;
     @Setter
     private Function fillFunction;
 

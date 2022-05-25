@@ -3,10 +3,7 @@ package org.example.er2petriflow.er.converter;
 import org.example.er2petriflow.er.UnsupportedRelationException;
 import org.example.er2petriflow.er.domain.Entity;
 import org.example.er2petriflow.er.domain.Relation;
-import org.example.er2petriflow.generated.petriflow.Data;
-import org.example.er2petriflow.generated.petriflow.DataType;
-import org.example.er2petriflow.generated.petriflow.Document;
-import org.example.er2petriflow.generated.petriflow.Function;
+import org.example.er2petriflow.generated.petriflow.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -24,6 +21,14 @@ public class RelationConverter {
     change optionField options { cases.collectEntries(([it.stringId, it.title])) }
 }
 """;
+
+    protected static final String FILL_OPTIONS_ACTION_TEMPLATE = """
+optionField: f.this,
+prefix: f.%s;
+
+%s(optionField, prefix);
+""";
+
     protected static final String RESOLVE_PREFIX_ACTION_TEMPLATE = """
 prefix: f.%s;
 
@@ -66,8 +71,9 @@ change prefix value {
         }
 
         char suffix = 'A';
-        for (Entity entity : relation.getConnections()) {
-            Data selector = createForRelation(entity, ENTITY_SELECTION_PREFIX + suffix);
+        for (EntityContext context : entities) {
+            Data selector = createForRelation(context.getEntity(), ENTITY_SELECTION_PREFIX + suffix);
+            context.setSelectorField(selector);
             result.getData().add(selector);
             suffix++;
         }
@@ -88,12 +94,25 @@ change prefix value {
         CrudNet crudNet = createCrudNet(result, "relation");
 
         // Functions
-        Function fillA = createFunction("fillA", String.format(FILL_OPTIONS_FUNCTION_TEMPLATE, entities.get(0).getEntity().getProcessIdentifier()));
-        Function fillB = createFunction("fillB", String.format(FILL_OPTIONS_FUNCTION_TEMPLATE, entities.get(1).getEntity().getProcessIdentifier()));
+        char suffix = 'A';
+        for (EntityContext context : entities) {
+            Function f = createFunction("fill" + suffix, String.format(FILL_OPTIONS_FUNCTION_TEMPLATE, context.getEntity().getProcessIdentifier()));
+            context.setFillFunction(f);
+            result.getFunction().add(f);
+            suffix++;
+        }
 
-        result.getFunction().addAll(List.of(fillA, fillB));
-
+        // Actions
         // prefix
         addCreateCaseAction(result, String.format(RESOLVE_PREFIX_ACTION_TEMPLATE, PROCESS_PREFIX_FIELD_ID));
+
+        // fill selector options on getData event
+        for (EntityContext context: entities) {
+            addDataEventAction(context.getSelectorField(), DataEventType.GET, EventPhaseType.POST, String.format(
+                    FILL_OPTIONS_ACTION_TEMPLATE,
+                    PROCESS_PREFIX_FIELD_ID,
+                    context.getFillFunction().getName()
+            ));
+        }
     }
 }

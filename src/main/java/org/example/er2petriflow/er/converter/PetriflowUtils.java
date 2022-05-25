@@ -197,8 +197,7 @@ public abstract class PetriflowUtils {
         Event assign = createLabeledEvent(EventType.ASSIGN, DELETE_ASSIGN_EVENT_LABEL);
         Event finish = createLabeledEvent(EventType.FINISH, DELETE_FINISH_EVENT_LABEL);
 
-        Action action = new Action();
-        action.setValue("async.run { workflowService.deleteCase(useCase.stringId) }");
+        Action action = createAction("async.run { workflowService.deleteCase(useCase.stringId) }");
 
         addActions(finish, EventPhaseType.POST, action);
 
@@ -209,22 +208,44 @@ public abstract class PetriflowUtils {
 
     public static void addCreateCaseAction(Document petriflow, String actionCode) {
         CaseEvent create;
+        boolean isNew = false;
         if (petriflow.getCaseEvents() != null && petriflow.getCaseEvents().getEvent() != null && petriflow.getCaseEvents().getEvent().stream().anyMatch(e -> e.getType().equals(CaseEventType.CREATE))) {
             create = petriflow.getCaseEvents().getEvent().stream().filter(e -> e.getType().equals(CaseEventType.CREATE)).findFirst().get();
         } else {
             create = createCaseEvent(CaseEventType.CREATE);
+            isNew = true;
         }
 
-        Action action = new Action();
-        action.setValue(actionCode);
+        Action action = createAction(actionCode);
 
         addActions(create, EventPhaseType.POST, action);
 
-        if (petriflow.getCaseEvents() == null) {
-            var caseEvents = new CaseEvents();
-            petriflow.setCaseEvents(caseEvents);
+        if (isNew) {
+            if (petriflow.getCaseEvents() == null) {
+                var caseEvents = new CaseEvents();
+                petriflow.setCaseEvents(caseEvents);
+            }
+            petriflow.getCaseEvents().getEvent().add(create);
         }
-        petriflow.getCaseEvents().getEvent().add(create);
+    }
+
+    public static void addDataEventAction(Data variable, DataEventType event, EventPhaseType phase, String actionCode) {
+        DataEvent eventObj;
+        boolean isNew = false;
+        if (variable.getEvent().stream().anyMatch(e -> e.getType().equals(event))) {
+            eventObj = variable.getEvent().stream().filter(e -> e.getType().equals(event)).findFirst().get();
+        } else {
+            eventObj = createDataEvent(event);
+            isNew = true;
+        }
+
+        Action action = createAction(actionCode);
+
+        addActions(eventObj, phase, action);
+
+        if (isNew) {
+            variable.getEvent().add(eventObj);
+        }
     }
 
     public static Event createLabeledEvent(EventType type, String label) {
@@ -245,6 +266,18 @@ public abstract class PetriflowUtils {
         CaseEvent event = new CaseEvent();
         event.setType(type);
         return event;
+    }
+
+    public static DataEvent createDataEvent(DataEventType type) {
+        DataEvent event = new DataEvent();
+        event.setType(type);
+        return event;
+    }
+
+    public static Action createAction(String actionCode) {
+        Action action = new Action();
+        action.setValue(actionCode);
+        return action;
     }
 
     public static Function createFunction(String name, String body) {
