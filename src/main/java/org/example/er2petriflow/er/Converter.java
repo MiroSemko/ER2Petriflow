@@ -29,7 +29,7 @@ public class Converter {
 
     protected static final String FILL_OPTIONS_FUNCTION_TEMPLATE = """
 (optionField, prefixField) -> {
-    let cases = findCases({ it.processIdentifier.eq(prefixField.value + "%s") });
+    def cases = findCases({ it.processIdentifier.eq(prefixField.value + "%s") });
     change optionField options { cases.collectEntries(([it.stringId, it.title])) }
 }
 """;
@@ -95,6 +95,7 @@ change prefix value {
 
         setDocumentMetadata(result, "REL", relation.getProcessIdentifier(), relation.getName());
         createRelationAttributes(relation, result);
+        createSystemRole(result);
         createRelationWorkflow(relation, result, entities);
 
         return result;
