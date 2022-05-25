@@ -16,9 +16,9 @@ public class RelationConverter {
     protected static final String ENTITY_SELECTION_PREFIX = "entity";
 
     protected static final String FILL_OPTIONS_FUNCTION_TEMPLATE = """
-(optionField, prefixField) -> {
+{ optionField, prefixField ->
     def cases = findCases({ it.processIdentifier.eq(prefixField.value + "%s") });
-    change optionField options { cases.collectEntries(([it.stringId, it.title])) }
+    change optionField options { cases.collectEntries({[it.stringId, it.title]}) }
 }
 """;
 
