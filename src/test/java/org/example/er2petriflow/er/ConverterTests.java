@@ -16,6 +16,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.example.er2petriflow.er.TestHelper.getTestFile;
+import static org.example.er2petriflow.er.converter.PetriflowUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ConverterTests {
@@ -66,7 +67,7 @@ public class ConverterTests {
             Attribute attribute = attributeMap.remove(dataVariable.getId());
 
             if (attribute == null) {
-                assertEquals(Converter.LAYOUT_TASK_REF_ID, dataVariable.getId());
+                assertEquals(LAYOUT_TASK_REF_ID, dataVariable.getId());
                 assertNotNull(dataVariable.getType());
                 assertEquals(DataType.TASK_REF, dataVariable.getType());
                 continue;
@@ -85,10 +86,10 @@ public class ConverterTests {
         assertEquals(1, petriflow.getRole().size());
         Role role = petriflow.getRole().get(0);
         assertNotNull(role);
-        assertEquals(Converter.SYSTEM_ROLE_ID, role.getId());
+        assertEquals(SYSTEM_ROLE_ID, role.getId());
         assertNotNull(role.getTitle());
         assertNotNull(role.getTitle().getValue());
-        assertEquals(Converter.SYSTEM_ROLE_TITLE, role.getTitle().getValue());
+        assertEquals(SYSTEM_ROLE_TITLE, role.getTitle().getValue());
 
         assertNotNull(petriflow.getTransition());
         assertEquals(5, petriflow.getTransition().size());
@@ -106,16 +107,16 @@ public class ConverterTests {
             assertNotNull(dataGroup.getId());
             assertEquals(LayoutType.LEGACY, dataGroup.getLayout());
 
-            if (t.getId().equals(Converter.LAYOUT_TRANSITION_ID)) {
+            if (t.getId().equals(LAYOUT_TRANSITION_ID)) {
                 assertEquals(entity.getAttributes().size(), dataGroup.getDataRef().size());
             } else {
                 assertNotNull(t.getDataGroup());
                 assertEquals(1, dataGroup.getDataRef().size());
                 DataRef ref = dataGroup.getDataRef().get(0);
                 assertNotNull(ref);
-                assertEquals(Converter.LAYOUT_TASK_REF_ID, ref.getId());
+                assertEquals(LAYOUT_TASK_REF_ID, ref.getId());
 
-                if (t.getId().equals(Converter.DELETE_TRANSITION_ID)) {
+                if (t.getId().equals(DELETE_TRANSITION_ID)) {
                     assertNotNull(t.getEvent());
                     assertEquals(2, t.getEvent().size());
                     for (Event e : t.getEvent()) {
