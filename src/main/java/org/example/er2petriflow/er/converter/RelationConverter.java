@@ -38,21 +38,21 @@ public class RelationConverter {
                 
                 def removedCases = findCases({ it._id.in(removed) });
                 removedCases.each {
-                    def newValue = new ArrayList(it.dataSet.get(caseRefFieldId).value);
+                    def newCaseRefValue = new ArrayList(it.dataSet.get(caseRefFieldId).value);
                     newValue.remove(useCase.stringId)
                 
                     def t = assignTask(updateTransId, it)
-                    setData(t, [(caseRefFieldId):["value":newValue]])
+                    setData(t, [(caseRefFieldId):["value":newCaseRefValue]])
                     finishTask(t)
                 }
                 
                 def addedCases = findCases({it._id.in(added)});
                 addedCases.each {
-                    def newValue = new ArrayList(it.dataSet.get(caseRefFieldId).value);
+                    def newCaseRefValue = new ArrayList(it.dataSet.get(caseRefFieldId).value);
                     newValue.add(useCase.stringId)
                 
                     def t = assignTask(updateTransId, it)
-                    setData(t, [(caseRefFieldId):["value":newValue]])
+                    setData(t, [(caseRefFieldId):["value":newCaseRefValue]])
                     finishTask(t)
                 }
             }
@@ -104,8 +104,8 @@ public class RelationConverter {
             oldB: f.%s,
             newB: f.%s;
             
-            updateRelation(oldA.value, newA.value, %s, %s)
-            updateRelation(oldB.value, newB.value, %s, %s)
+            updateRelation(oldA.value, newA.value, "%s", "%s")
+            updateRelation(oldB.value, newB.value, "%s", "%s")
             """;
 
     private final Relation relation;
@@ -176,6 +176,7 @@ public class RelationConverter {
         var petriflow = context.getEntity().getPetriflow();
         var place = petriflow.getPlace().stream().filter(p -> p.getId().equals(CREATED_PLACE_ID)).findFirst().orElseThrow(() -> new IllegalStateException(String.format("Entity net does not have a place with id '%s'", CREATED_PLACE_ID)));
         Transition t1 = crateTransition(SET_RELATION_TRANSITION_PREFIX + relation.getProcessIdentifier(), 4, 6 + context.getEntity().getProcessedRelations() * 2, petriflow);
+        context.setCaseRefTransitionId(t1.getId());
         Transition t2 = crateTransition(VIEW_RELATION_TRANSITION_PREFIX + relation.getProcessIdentifier(), "View " + relation.getName(), 6, 6 + context.getEntity().getProcessedRelations() * 2, petriflow);
 
         addSystemRolePerform(t1);
