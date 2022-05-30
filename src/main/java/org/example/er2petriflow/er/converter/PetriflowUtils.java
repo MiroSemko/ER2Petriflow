@@ -14,6 +14,9 @@ public abstract class PetriflowUtils {
 
     public static final String DELETE_TRANSITION_ID = "delete";
     public static final String LAYOUT_TRANSITION_ID = "layout";
+    public static final String READ_TRANSITION_ID = "read";
+    public static final String CREATED_PLACE_ID = "created";
+
     public static final String LAYOUT_TASK_REF_ID = "layoutTaskRef";
 
     public static final String PROCESS_PREFIX_FIELD_ID = "prefix";
@@ -37,35 +40,26 @@ public abstract class PetriflowUtils {
     }
 
     public static CrudNet createCrudNet(Document petriflow, String suffix) {
-        return createCrudNet(petriflow, suffix, new IncrementingCounter());
-    }
-
-    public static CrudNet createCrudNet(Document petriflow, String suffix, IncrementingCounter arcIdCounter) {
         // Petri net
         Place p1 = createPlace("p1", 0, 2, 1);
-        Place p2 = createPlace("p2", 4, 2, 0);
+        Place p2 = createPlace(CREATED_PLACE_ID, 4, 2, 0);
         addPlaces(petriflow, p1, p2);
         Transition t1 = createTransition("t1", "Create " + suffix, 2, 2);
-        Transition t2 = createTransition("t2", "Read " + suffix, 6, 0);
+        Transition t2 = createTransition(READ_TRANSITION_ID, "Read " + suffix, 6, 0);
         Transition t3 = createTransition("t3", "Update " + suffix, 6, 2);
         Transition t4 = createTransition(DELETE_TRANSITION_ID, "Delete " + suffix, 6, 4);
         Transition layout = createTransition(LAYOUT_TRANSITION_ID, 2, 0);
         addTransitions(petriflow, t1, t2, t3, t4, layout);
 
-        addArc(petriflow, p1, t1, ArcType.REGULAR, arcIdCounter);
-        addArc(petriflow, t1, p2, arcIdCounter);
-        addArc(petriflow, p2, t2, ArcType.READ, arcIdCounter);
-        addArc(petriflow, p2, t3, ArcType.READ, arcIdCounter);
-        addArc(petriflow, p2, t4, ArcType.READ, arcIdCounter);
+        addArc(petriflow, p1, t1, ArcType.REGULAR);
+        addArc(petriflow, t1, p2);
+        addArc(petriflow, p2, t2, ArcType.READ);
+        addArc(petriflow, p2, t3, ArcType.READ);
+        addArc(petriflow, p2, t4, ArcType.READ);
 
         // roles
         createSystemRole(petriflow);
-        RoleRef roleRef = new RoleRef();
-        roleRef.setId(SYSTEM_ROLE_ID);
-        Logic logic = new Logic();
-        logic.setPerform(true);
-        roleRef.setLogic(logic);
-        layout.getRoleRef().add(roleRef);
+        addSystemRolePerform(layout);
 
         // Data refs
         referenceAllData(petriflow, layout);
@@ -127,6 +121,22 @@ public abstract class PetriflowUtils {
         pn.getPlace().addAll(List.of(places));
     }
 
+    public static Transition crateTransition(String suggestedId, int x, int y, Document petriflow) {
+        return crateTransition(suggestedId, "", x, y, petriflow);
+    }
+
+    public static Transition crateTransition(String suggestedId, String label, int x, int y, Document petriflow) {
+        String finalId = suggestedId;
+
+        var counter = new IncrementingCounter();
+        var existingIds = petriflow.getTransition().stream().map(Transition::getId).collect(Collectors.toSet());
+        while(existingIds.contains(finalId)) {
+            finalId = suggestedId + counter.next();
+        }
+
+        return createTransition(finalId, label, x, y);
+    }
+
     public static Transition createTransition(String id, int x, int y) {
         return createTransition(id, "", x, y);
     }
@@ -145,17 +155,17 @@ public abstract class PetriflowUtils {
         pn.getTransition().addAll(List.of(transitions));
     }
 
-    public static void addArc(Document pn, Place source, Transition destination, ArcType type, IncrementingCounter counter) {
-        addArc(pn, source.getId(), destination.getId(), type, counter);
+    public static void addArc(Document pn, Place source, Transition destination, ArcType type) {
+        addArc(pn, source.getId(), destination.getId(), type);
     }
 
-    public static void addArc(Document pn, Transition source, Place destination, IncrementingCounter counter) {
-        addArc(pn, source.getId(), destination.getId(), ArcType.REGULAR, counter);
+    public static void addArc(Document pn, Transition source, Place destination) {
+        addArc(pn, source.getId(), destination.getId(), ArcType.REGULAR);
     }
 
-    public static void addArc(Document pn, String sourceId, String destinationId, ArcType type, IncrementingCounter counter) {
+    public static void addArc(Document pn, String sourceId, String destinationId, ArcType type) {
         Arc a = new Arc();
-        a.setId("a" + counter.next());
+        a.setId("a" + (pn.getArc().size() + 1));
         a.setSourceId(sourceId);
         a.setDestinationId(destinationId);
         a.setMultiplicity(1);
@@ -173,9 +183,13 @@ public abstract class PetriflowUtils {
     }
 
     public static void referenceDataOnTransitions(Data data, Behavior behavior, Transition... transitions) {
+        referenceDataOnTransitions(data.getId(), behavior, transitions);
+    }
+
+    public static void referenceDataOnTransitions(String datafieldId, Behavior behavior, Transition... transitions) {
         for (Transition t : transitions) {
             DataGroup dataGroup = createDataGroup();
-            DataRef dataRef = createDataRef(data, behavior);
+            DataRef dataRef = createDataRef(datafieldId, behavior);
             dataGroup.getDataRef().add(dataRef);
             t.getDataGroup().add(dataGroup);
         }
@@ -193,8 +207,12 @@ public abstract class PetriflowUtils {
     }
 
     public static DataRef createDataRef(Data data, Behavior behavior) {
+        return createDataRef(data.getId(), behavior);
+    }
+
+    public static DataRef createDataRef(String datafieldId, Behavior behavior) {
         DataRef result = new DataRef();
-        result.setId(data.getId());
+        result.setId(datafieldId);
         Logic logic = new Logic();
         logic.getBehavior().add(behavior);
         result.setLogic(logic);
@@ -324,6 +342,15 @@ public abstract class PetriflowUtils {
         if (isNew) {
             event.getActions().add(wrapper);
         }
+    }
+
+    public static void addSystemRolePerform(Transition t) {
+        RoleRef roleRef = new RoleRef();
+        roleRef.setId(SYSTEM_ROLE_ID);
+        Logic logic = new Logic();
+        logic.setPerform(true);
+        roleRef.setLogic(logic);
+        t.getRoleRef().add(roleRef);
     }
 
     public static CaseEvent createCaseEvent(CaseEventType type) {

@@ -18,6 +18,8 @@ public class RelationConverter {
     protected static final String OLD_VALUE_PREFIX = "oldValue";
     protected static final String CASE_REF_PREFIX = "relation_";
     protected static final String TASK_REF_PREFIX = "viewRelation_";
+    protected static final String SET_RELATION_TRANSITION_PREFIX = "update_";
+    protected static final String VIEW_RELATION_TRANSITION_PREFIX = "read_";
 
     protected static final String FILL_OPTIONS_FUNCTION_TEMPLATE = """
             { optionField, prefixField ->
@@ -56,6 +58,15 @@ public class RelationConverter {
 
             change to value { from.value }
             """;
+
+    private static final String CHANGE_ENTITY_TASKREF_ACTION_TEMPLATE = String.format("""
+            caseRef: f.%s,
+            taskRef: f.%s;
+                        
+            def viewTasks = findTasks({it.caseId.in(caseRef.value) & it.transitionId.eq(%s)})
+                        
+            change taskRef value { viewTasks.collect({ it.stringId }) }
+            """, "%s", "%s", READ_TRANSITION_ID);
 
     private final Relation relation;
     private final List<EntityContext> entities;
@@ -103,22 +114,43 @@ public class RelationConverter {
     }
 
     protected void updateEntityWorkflows() {
-        for (var context: entities) {
+        for (var context : entities) {
             addRelationFieldsToEntity(context);
+            addRelationTransitionsToEntity(context);
+            context.getEntity().incrementProcessedRelations();
         }
     }
 
     protected void addRelationFieldsToEntity(EntityContext context) {
-        context.setCaseRefFieldId(
-                // TODO should be a case ref field, but demo.netgrif.com does not support case refs correctly
-                addDataVariableToEntity(CASE_REF_PREFIX + relation.getProcessIdentifier(), DataType.TASK_REF, context.getEntity())
-        );
+        // TODO should be a case ref field, but demo.netgrif.com does not support case refs correctly
+        var caseRef = addDataVariableToEntity(CASE_REF_PREFIX + relation.getProcessIdentifier(), DataType.TASK_REF, context.getEntity());
+        context.setCaseRefFieldId(caseRef.getId());
         context.setTaskRefFieldId(
-                addDataVariableToEntity(TASK_REF_PREFIX + relation.getProcessIdentifier(), DataType.TASK_REF, context.getEntity())
+                addDataVariableToEntity(TASK_REF_PREFIX + relation.getProcessIdentifier(), DataType.TASK_REF, context.getEntity()).getId()
         );
+
+        addDataEventAction(caseRef, DataEventType.SET, EventPhaseType.POST, String.format(CHANGE_ENTITY_TASKREF_ACTION_TEMPLATE, caseRef.getId(), context.getTaskRefFieldId()));
     }
 
-    protected String addDataVariableToEntity(String proposedId, DataType type, Entity entity) {
+    protected void addRelationTransitionsToEntity(EntityContext context) {
+        var petriflow = context.getEntity().getPetriflow();
+        var place = petriflow.getPlace().stream().filter(p -> p.getId().equals(CREATED_PLACE_ID)).findFirst().orElseThrow(() -> new IllegalStateException(String.format("Entity net does not have a place with id '%s'", CREATED_PLACE_ID)));
+        Transition t1 = crateTransition(SET_RELATION_TRANSITION_PREFIX + relation.getProcessIdentifier(), 4, 6 + context.getEntity().getProcessedRelations() * 2, petriflow);
+        Transition t2 = crateTransition(VIEW_RELATION_TRANSITION_PREFIX + relation.getProcessIdentifier(), "View " + relation.getName(), 6, 6 + context.getEntity().getProcessedRelations() * 2, petriflow);
+
+        addSystemRolePerform(t1);
+        referenceDataOnTransitions(context.getCaseRefFieldId(), Behavior.EDITABLE, t1);
+
+        referenceDataOnTransitions(context.getTaskRefFieldId(), Behavior.VISIBLE, t2);
+
+        petriflow.getTransition().add(t1);
+        petriflow.getTransition().add(t2);
+
+        addArc(petriflow, place, t1, ArcType.READ);
+        addArc(petriflow, place, t2, ArcType.READ);
+    }
+
+    protected Data addDataVariableToEntity(String proposedId, DataType type, Entity entity) {
         String finalId = proposedId;
         var petriflow = entity.getPetriflow();
         IncrementingCounter counter = new IncrementingCounter();
@@ -131,8 +163,9 @@ public class RelationConverter {
         Data variable = createDataVariable(finalId, type);
         petriflow.getData().add(variable);
 
-        return finalId;
+        return variable;
     }
+
     protected void createRelationWorkflow() {
         CrudNet crudNet = createCrudNet(result, "relation");
 
