@@ -17,42 +17,42 @@ public class RelationConverter {
     protected static final String OLD_VALUE_PREFIX = "oldValue";
 
     protected static final String FILL_OPTIONS_FUNCTION_TEMPLATE = """
-{ optionField, prefixField ->
-    def cases = findCases({ it.processIdentifier.eq(prefixField.value + "%s") });
-    change optionField options { cases.collectEntries({[it.stringId, it.title]}) }
-}
-""";
+            { optionField, prefixField ->
+                def cases = findCases({ it.processIdentifier.eq(prefixField.value + "%s") });
+                change optionField options { cases.collectEntries({[it.stringId, it.title]}) }
+            }
+            """;
 
     protected static final String FILL_OPTIONS_ACTION_TEMPLATE = """
-optionField: f.this,
-prefix: f.%s;
+            optionField: f.this,
+            prefix: f.%s;
 
-%s(optionField, prefix);
-""";
+            %s(optionField, prefix);
+            """;
 
     protected static final String RESOLVE_PREFIX_ACTION_TEMPLATE = """
-prefix: f.%s;
+            prefix: f.%s;
 
-String[] splitProcessIdentifier = useCase.processIdentifier.split("_", 2)
-if (splitProcessIdentifier.length < 2) {
-    change prefix value { ""; }
-    return;
-}
+            String[] splitProcessIdentifier = useCase.processIdentifier.split("_", 2)
+            if (splitProcessIdentifier.length < 2) {
+                change prefix value { ""; }
+                return;
+            }
 
-change prefix value {
-    if (splitProcessIdentifier[0].matches("[0-9a-f]{24}")) {
-        return splitProcessIdentifier[0] + "_";
-    }
-    return "";
-}
-""";
+            change prefix value {
+                if (splitProcessIdentifier[0].matches("[0-9a-f]{24}")) {
+                    return splitProcessIdentifier[0] + "_";
+                }
+                return "";
+            }
+            """;
 
-    private static final String SAVE_PREVIOUS_VALUE_ACTION_TEMPLATE = """
-current: f.this,
-old: f.%s;
+    private static final String COPY_VALUE_ACTION_TEMPLATE = """
+            from: f.%s,
+            to: f.%s;
 
-change old value { current.value }
-""";
+            change to value { from.value }
+            """;
 
     private final Relation relation;
     private final List<EntityContext> entities;
@@ -121,15 +121,22 @@ change old value { current.value }
         addCreateCaseAction(result, String.format(RESOLVE_PREFIX_ACTION_TEMPLATE, PROCESS_PREFIX_FIELD_ID));
 
         // selector actions
-        for (EntityContext context: entities) {
+        for (EntityContext context : entities) {
             addDataEventAction(context.getSelectorField(), DataEventType.GET, EventPhaseType.POST, String.format(
                     FILL_OPTIONS_ACTION_TEMPLATE,
                     PROCESS_PREFIX_FIELD_ID,
                     context.getFillFunction().getName()
             ));
-            addDataEventAction(context.getSelectorField(), DataEventType.SET, EventPhaseType.PRE, String.format(
-                    SAVE_PREVIOUS_VALUE_ACTION_TEMPLATE,
+
+            addTransitionEventAction(crudNet.getCreate(), EventType.FINISH, EventPhaseType.POST, String.format(
+                    COPY_VALUE_ACTION_TEMPLATE,
+                    context.getSelectorField().getId(),
                     context.getOldValueField().getId()
+            ));
+            addTransitionEventAction(crudNet.getCreate(), EventType.CANCEL, EventPhaseType.POST, String.format(
+                    COPY_VALUE_ACTION_TEMPLATE,
+                    context.getOldValueField().getId(),
+                    context.getSelectorField().getId()
             ));
         }
     }

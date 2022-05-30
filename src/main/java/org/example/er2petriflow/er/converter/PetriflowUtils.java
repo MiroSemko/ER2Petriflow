@@ -4,6 +4,7 @@ import org.example.er2petriflow.generated.petriflow.*;
 import org.example.er2petriflow.util.IncrementingCounter;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public abstract class PetriflowUtils {
@@ -194,15 +195,10 @@ public abstract class PetriflowUtils {
     }
 
     public static void createDeleteCaseAction(Transition deleteTransition) {
-        Event assign = createLabeledEvent(EventType.ASSIGN, DELETE_ASSIGN_EVENT_LABEL);
-        Event finish = createLabeledEvent(EventType.FINISH, DELETE_FINISH_EVENT_LABEL);
-
-        Action action = createAction("async.run { workflowService.deleteCase(useCase.stringId) }");
-
-        addActions(finish, EventPhaseType.POST, action);
-
+        Event assign = createTransitionEvent(EventType.ASSIGN, DELETE_ASSIGN_EVENT_LABEL);
         deleteTransition.getEvent().add(assign);
-        deleteTransition.getEvent().add(finish);
+
+        addTransitionEventAction(deleteTransition, EventType.FINISH, DELETE_FINISH_EVENT_LABEL, EventPhaseType.POST, "async.run { workflowService.deleteCase(useCase.stringId) }");
     }
 
 
@@ -232,15 +228,15 @@ public abstract class PetriflowUtils {
     public static void addDataEventAction(Data variable, DataEventType event, EventPhaseType phase, String actionCode) {
         DataEvent eventObj;
         boolean isNew = false;
-        if (variable.getEvent().stream().anyMatch(e -> e.getType().equals(event))) {
-            eventObj = variable.getEvent().stream().filter(e -> e.getType().equals(event)).findFirst().get();
+        Optional<DataEvent> first = variable.getEvent().stream().filter(e -> e.getType().equals(event)).findFirst();
+        if (first.isPresent()) {
+            eventObj = first.get();
         } else {
             eventObj = createDataEvent(event);
             isNew = true;
         }
 
         Action action = createAction(actionCode);
-
         addActions(eventObj, phase, action);
 
         if (isNew) {
@@ -248,18 +244,74 @@ public abstract class PetriflowUtils {
         }
     }
 
-    public static Event createLabeledEvent(EventType type, String label) {
-        Event event = new Event();
-        event.setType(type);
+    public static void addTransitionEventAction(Transition transition, EventType event, EventPhaseType phase, String actionCode) {
+        Event eventObj;
+        boolean isNew = false;
+        Optional<Event> first = transition.getEvent().stream().filter(e -> e.getType().equals(event)).findFirst();
+        if (first.isPresent()) {
+            eventObj = first.get();
+        } else {
+            eventObj = createTransitionEvent(event);
+            isNew = true;
+        }
+
+        Action action = createAction(actionCode);
+        addActions(eventObj, phase, action);
+
+        if (isNew) {
+            transition.getEvent().add(eventObj);
+        }
+    }
+
+    public static void addTransitionEventAction(Transition transition, EventType event, String eventTitle, EventPhaseType phase, String actionCode) {
+        Event eventObj;
+        boolean isNew = false;
+        Optional<Event> first = transition.getEvent().stream().filter(e -> e.getType().equals(event)).findFirst();
+        if (first.isPresent()) {
+            eventObj = first.get();
+            eventObj.setTitle(i18nWithDefaultValue(eventTitle));
+        } else {
+            eventObj = createTransitionEvent(event, eventTitle);
+            isNew = true;
+        }
+
+        Action action = createAction(actionCode);
+        addActions(eventObj, phase, action);
+
+        if (isNew) {
+            transition.getEvent().add(eventObj);
+        }
+    }
+
+    public static Event createTransitionEvent(EventType type, String label) {
+        Event event = createTransitionEvent(type);
         event.setTitle(i18nWithDefaultValue(label));
         return event;
     }
 
+    public static Event createTransitionEvent(EventType type) {
+        Event event = new Event();
+        event.setType(type);
+        return event;
+    }
+
     public static void addActions(BaseEvent event, EventPhaseType phase, Action... actions) {
-        Actions wrapper = new Actions();
-        wrapper.setPhase(phase);
+        Actions wrapper;
+        boolean isNew = false;
+        Optional<Actions> first = event.getActions().stream().filter(a -> a.getPhase().equals(phase)).findFirst();
+        if (first.isPresent()) {
+            wrapper = first.get();
+        } else {
+            wrapper = new Actions();
+            wrapper.setPhase(phase);
+            isNew = true;
+        }
+
         wrapper.getAction().addAll(List.of(actions));
-        event.getActions().add(wrapper);
+
+        if (isNew) {
+            event.getActions().add(wrapper);
+        }
     }
 
     public static CaseEvent createCaseEvent(CaseEventType type) {
