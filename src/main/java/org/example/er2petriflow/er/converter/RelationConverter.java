@@ -4,6 +4,7 @@ import org.example.er2petriflow.er.UnsupportedRelationException;
 import org.example.er2petriflow.er.domain.Entity;
 import org.example.er2petriflow.er.domain.Relation;
 import org.example.er2petriflow.generated.petriflow.*;
+import org.example.er2petriflow.util.IncrementingCounter;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,6 +16,8 @@ public class RelationConverter {
 
     protected static final String ENTITY_SELECTION_PREFIX = "entity";
     protected static final String OLD_VALUE_PREFIX = "oldValue";
+    protected static final String CASE_REF_PREFIX = "relation_";
+    protected static final String TASK_REF_PREFIX = "viewRelation_";
 
     protected static final String FILL_OPTIONS_FUNCTION_TEMPLATE = """
             { optionField, prefixField ->
@@ -68,6 +71,7 @@ public class RelationConverter {
 
         setDocumentMetadata(result, "REL", relation.getProcessIdentifier(), relation.getName());
         createRelationAttributes();
+        updateEntityWorkflows();
         createRelationWorkflow();
 
         return result;
@@ -98,6 +102,37 @@ public class RelationConverter {
         );
     }
 
+    protected void updateEntityWorkflows() {
+        for (var context: entities) {
+            addRelationFieldsToEntity(context);
+        }
+    }
+
+    protected void addRelationFieldsToEntity(EntityContext context) {
+        context.setCaseRefFieldId(
+                // TODO should be a case ref field, but demo.netgrif.com does not support case refs correctly
+                addDataVariableToEntity(CASE_REF_PREFIX + relation.getProcessIdentifier(), DataType.TASK_REF, context.getEntity())
+        );
+        context.setTaskRefFieldId(
+                addDataVariableToEntity(TASK_REF_PREFIX + relation.getProcessIdentifier(), DataType.TASK_REF, context.getEntity())
+        );
+    }
+
+    protected String addDataVariableToEntity(String proposedId, DataType type, Entity entity) {
+        String finalId = proposedId;
+        var petriflow = entity.getPetriflow();
+        IncrementingCounter counter = new IncrementingCounter();
+
+        var existingIds = petriflow.getData().stream().map(Data::getId).collect(Collectors.toSet());
+        while (existingIds.contains(finalId)) {
+            finalId = proposedId + counter.next();
+        }
+
+        Data variable = createDataVariable(finalId, type);
+        petriflow.getData().add(variable);
+
+        return finalId;
+    }
     protected void createRelationWorkflow() {
         CrudNet crudNet = createCrudNet(result, "relation");
 

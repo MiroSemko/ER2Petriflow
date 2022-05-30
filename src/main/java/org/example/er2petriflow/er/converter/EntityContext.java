@@ -16,6 +16,12 @@ public class EntityContext {
     private Data oldValueField;
     @Setter
     private Function fillFunction;
+    @Setter
+    private String caseRefFieldId;
+    @Setter
+    private String taskRefFieldId;
+    @Setter
+    private String caseRefTransitionId;
 
     public EntityContext(Entity entity) {
         this.entity = entity;

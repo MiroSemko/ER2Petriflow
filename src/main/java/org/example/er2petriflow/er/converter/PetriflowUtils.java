@@ -88,10 +88,17 @@ public abstract class PetriflowUtils {
     }
 
     public static Data createDataVariable(String id, String title, DataType type) {
+        Data result = createDataVariable(id, type);
+
+        result.setTitle(i18nWithDefaultValue(title));
+
+        return result;
+    }
+
+    public static Data createDataVariable(String id, DataType type) {
         Data result = new Data();
 
         result.setId(id);
-        result.setTitle(i18nWithDefaultValue(title));
         result.setType(type);
 
         return result;
