@@ -29,12 +29,34 @@ public class RelationConverter {
             }
             """;
 
+    protected static final String SUBTRACT_SET_VALUES = """
+            { initialOptionFieldValue, subtractedOptionFieldValue ->
+                def result = new HashSet();
+                
+                if (initialOptionFieldValue == null) {
+                    return result;
+                } else if (initialOptionFieldValue instanceof String) {
+                    result.add(initialOptionFieldValue);
+                } else if (initialOptionFieldValue instanceof Collection) {
+                    result.addAll(initialOptionFieldValue);
+                }
+                
+                if (subtractedOptionFieldValue == null) {
+                    return result;
+                } else if (subtractedOptionFieldValue instanceof String) {
+                    result.remove(subtractedOptionFieldValue)
+                } else if (subtractedOptionFieldValue instanceof Collection) {
+                    result.removeAll(subtractedOptionFieldValue);
+                }
+                
+                return result;
+            }
+            """;
+
     protected static final String UPDATE_RELATION_FUNCTION = """
             { oldValue, newValue, updateTransId, caseRefFieldId ->
-                def removed = new HashSet(oldValue);
-                removed.removeAll(newValue);
-                def added = new HashSet(newValue);
-                added.removeAll(oldValue);
+                def removed = subtractSetValues(oldValue, newValue);
+                def added = subtractSetValues(newValue, oldValue);
                 
                 def removedCases = findCases({ it._id.in(removed) });
                 removedCases.each {
@@ -224,6 +246,7 @@ public class RelationConverter {
 
             suffix++;
         }
+        result.getFunction().add(createFunction("subtractSetValues", SUBTRACT_SET_VALUES));
         result.getFunction().add(createFunction("updateRelation", UPDATE_RELATION_FUNCTION));
 
         // Actions
