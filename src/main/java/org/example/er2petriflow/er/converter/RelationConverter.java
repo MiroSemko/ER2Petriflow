@@ -128,16 +128,16 @@ public class RelationConverter {
                     context.getFillFunction().getName()
             ));
 
-            addTransitionEventAction(crudNet.getCreate(), EventType.FINISH, EventPhaseType.POST, String.format(
+            addEventActionToTransitions(EventType.FINISH, EventPhaseType.POST, String.format(
                     COPY_VALUE_ACTION_TEMPLATE,
                     context.getSelectorField().getId(),
                     context.getOldValueField().getId()
-            ));
-            addTransitionEventAction(crudNet.getCreate(), EventType.CANCEL, EventPhaseType.POST, String.format(
+            ), crudNet.getCreate(), crudNet.getUpdate());
+            addEventActionToTransitions(EventType.CANCEL, EventPhaseType.POST, String.format(
                     COPY_VALUE_ACTION_TEMPLATE,
                     context.getOldValueField().getId(),
                     context.getSelectorField().getId()
-            ));
+            ), crudNet.getCreate(), crudNet.getUpdate());
         }
     }
 }

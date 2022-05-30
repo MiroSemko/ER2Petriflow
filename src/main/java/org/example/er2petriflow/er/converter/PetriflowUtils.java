@@ -244,6 +244,11 @@ public abstract class PetriflowUtils {
         }
     }
 
+    public static void addEventActionToTransitions(EventType event, EventPhaseType phase, String actionCode, Transition... transitions) {
+        for (Transition t : transitions) {
+            addTransitionEventAction(t, event, phase, actionCode);
+        }
+    }
     public static void addTransitionEventAction(Transition transition, EventType event, EventPhaseType phase, String actionCode) {
         Event eventObj;
         boolean isNew = false;
