@@ -61,20 +61,20 @@ public class RelationConverter {
                 def removedCases = findCases({ it._id.in(removed) });
                 removedCases.each {
                     def newCaseRefValue = new ArrayList(it.dataSet.get(caseRefFieldId).value);
-                    newValue.remove(useCase.stringId)
+                    newCaseRefValue.remove(useCase.stringId)
                 
                     def t = assignTask(updateTransId, it)
-                    setData(t, [(caseRefFieldId):["value":newCaseRefValue]])
+                    setData(t, [(caseRefFieldId):["type":"taskRef", "value":newCaseRefValue]])
                     finishTask(t)
                 }
                 
                 def addedCases = findCases({it._id.in(added)});
                 addedCases.each {
                     def newCaseRefValue = new ArrayList(it.dataSet.get(caseRefFieldId).value);
-                    newValue.add(useCase.stringId)
+                    newCaseRefValue.add(useCase.stringId)
                 
                     def t = assignTask(updateTransId, it)
-                    setData(t, [(caseRefFieldId):["value":newCaseRefValue]])
+                    setData(t, [(caseRefFieldId):["type":"taskRef", "value":newCaseRefValue]])
                     finishTask(t)
                 }
             }
@@ -115,7 +115,7 @@ public class RelationConverter {
             caseRef: f.%s,
             taskRef: f.%s;
                         
-            def viewTasks = findTasks({it.caseId.in(caseRef.value) & it.transitionId.eq(%s)})
+            def viewTasks = findTasks({it.caseId.in(caseRef.value) & it.transitionId.eq("%s")})
                         
             change taskRef value { viewTasks.collect({ it.stringId }) }
             """, "%s", "%s", READ_TRANSITION_ID);
