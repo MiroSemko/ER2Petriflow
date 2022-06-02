@@ -92,24 +92,27 @@ public class RelationConverter {
             def relatedCases = "${prefix.value}%s.search"(%s);
             
             def builder = new StringBuilder();
-            builder.append(<![CDATA[""\"<table style="width:100%%%%">""\"]]>)
+            //builder.append(<![CDATA[""\"<table style="width:100%%%%">""\"]]>)
             
             relatedCases.each {
             
-                builder.append(<![CDATA[""\"<tr><td>""\"]]>)
+                //builder.append(<![CDATA[""\"<tr><td>""\"]]>)
                 builder.append(it.key.stringId)
-                builder.append(<![CDATA[""\"</td>""\"]]>)
+                //builder.append(<![CDATA[""\"</td>""\"]]>)
                 
                 it.value.each {
-                    builder.append(<![CDATA[""\"<td>""\"]]>)
+                    builder.append(" | ")
+                    //builder.append(<![CDATA[""\"<td>""\"]]>)
                     builder.append(it != null ? it.stringId : "-")
-                    builder.append(<![CDATA[""\"</td>""\"]]>)
+                    //builder.append(<![CDATA[""\"</td>""\"]]>)
                 }
                 
-                builder.append(<![CDATA[""\"</tr>""\"]]>)
+                builder.append("\\n")
+                
+                //builder.append(<![CDATA[""\"</tr>""\"]]>)
             }
             
-            builder.append(<![CDATA[""\"</table>""\"]]>)
+            //builder.append(<![CDATA[""\"</table>""\"]]>)
             
             change htmlArea value {builder.toString()}
             """, PROCESS_PREFIX_FIELD_ID, "%s", "%s", "%s");
