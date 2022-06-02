@@ -6,7 +6,6 @@ import org.example.er2petriflow.er.domain.Relation;
 import org.example.er2petriflow.generated.petriflow.*;
 import org.example.er2petriflow.util.IncrementingCounter;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,57 +25,6 @@ public class RelationConverter {
             { optionField, prefixField ->
                 def cases = findCases({ it.processIdentifier.eq(prefixField.value + "%s") });
                 change optionField options { cases.collectEntries({[it.stringId, it.title]}) }
-            }
-            """;
-
-    protected static final String SUBTRACT_SET_VALUES = """
-            { initialOptionFieldValue, subtractedOptionFieldValue ->
-                def result = new HashSet();
-                
-                if (initialOptionFieldValue == null) {
-                    return result;
-                } else if (initialOptionFieldValue instanceof String) {
-                    result.add(initialOptionFieldValue);
-                } else if (initialOptionFieldValue instanceof Collection) {
-                    result.addAll(initialOptionFieldValue);
-                }
-                
-                if (subtractedOptionFieldValue == null) {
-                    return result;
-                } else if (subtractedOptionFieldValue instanceof String) {
-                    result.remove(subtractedOptionFieldValue)
-                } else if (subtractedOptionFieldValue instanceof Collection) {
-                    result.removeAll(subtractedOptionFieldValue);
-                }
-                
-                return result;
-            }
-            """;
-
-    protected static final String UPDATE_RELATION_FUNCTION = """
-            { oldValue, newValue, updateTransId, caseRefFieldId ->
-                def removed = subtractSetValues(oldValue, newValue);
-                def added = subtractSetValues(newValue, oldValue);
-                
-                def removedCases = findCases({ it._id.in(removed) });
-                removedCases.each {
-                    def newCaseRefValue = new ArrayList(it.dataSet.get(caseRefFieldId).value);
-                    newCaseRefValue.remove(useCase.stringId)
-                
-                    def t = assignTask(updateTransId, it)
-                    setData(t, [(caseRefFieldId):["type":"taskRef", "value":newCaseRefValue]])
-                    finishTask(t)
-                }
-                
-                def addedCases = findCases({it._id.in(added)});
-                addedCases.each {
-                    def newCaseRefValue = new ArrayList(it.dataSet.get(caseRefFieldId).value);
-                    newCaseRefValue.add(useCase.stringId)
-                
-                    def t = assignTask(updateTransId, it)
-                    setData(t, [(caseRefFieldId):["type":"taskRef", "value":newCaseRefValue]])
-                    finishTask(t)
-                }
             }
             """;
 
@@ -119,16 +67,6 @@ public class RelationConverter {
                         
             change taskRef value { viewTasks.collect({ it.stringId }) }
             """, "%s", "%s", READ_TRANSITION_ID);
-
-    private static final String UPDATE_RELATION_ACTION_TEMPLATE = """
-            oldA: f.%s,
-            newA: f.%s,
-            oldB: f.%s,
-            newB: f.%s;
-            
-            updateRelation(oldA.value, newA.value, "%s", "%s")
-            updateRelation(oldB.value, newB.value, "%s", "%s")
-            """;
 
     private final Relation relation;
     private final List<EntityContext> entities;
@@ -246,15 +184,10 @@ public class RelationConverter {
 
             suffix++;
         }
-        result.getFunction().add(createFunction("subtractSetValues", SUBTRACT_SET_VALUES));
-        result.getFunction().add(createFunction("updateRelation", UPDATE_RELATION_FUNCTION));
 
         // Actions
         // prefix
         addCreateCaseAction(result, String.format(RESOLVE_PREFIX_ACTION_TEMPLATE, PROCESS_PREFIX_FIELD_ID));
-
-        List<String> fieldReferences = new ArrayList<>();
-        List<String> methodArguments = new ArrayList<>();
 
         // selector actions
         for (EntityContext context : entities) {
@@ -274,19 +207,6 @@ public class RelationConverter {
                     context.getOldValueField().getId(),
                     context.getSelectorField().getId()
             ), crudNet.getCreate(), crudNet.getUpdate());
-
-            // old, new
-            fieldReferences.add(context.getOldValueField().getId());
-            fieldReferences.add(context.getSelectorField().getId());
-
-            // transition, case ref
-            methodArguments.add(context.getCaseRefTransitionId());
-            methodArguments.add(context.getCaseRefFieldId());
         }
-
-        fieldReferences.addAll(methodArguments);
-        addEventActionToTransitions(EventType.FINISH, EventPhaseType.PRE, String.format(
-                UPDATE_RELATION_ACTION_TEMPLATE, fieldReferences.toArray()
-        ), crudNet.getCreate(), crudNet.getUpdate());
     }
 }
