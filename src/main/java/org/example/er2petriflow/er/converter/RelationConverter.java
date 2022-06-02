@@ -6,6 +6,7 @@ import org.example.er2petriflow.er.domain.Relation;
 import org.example.er2petriflow.generated.petriflow.*;
 import org.example.er2petriflow.util.IncrementingCounter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,13 +22,57 @@ public class RelationConverter {
     protected static final String SET_RELATION_TRANSITION_PREFIX = "update_";
     protected static final String VIEW_RELATION_TRANSITION_PREFIX = "read_";
 
-    protected static final String FILL_OPTIONS_FUNCTION_TEMPLATE = """
+    protected static final String FILL_OPTIONS_FUNCTION_TEMPLATE = String.format("""
             { optionField, prefixField ->
-                def cases = findCases({ it.processIdentifier.eq(prefixField.value + "%s") });
+                def cases = findCases({ it.processIdentifier.eq(prefixField.value + "%s").and(it.activePlaces.get("%s").eq(1)) });
                 change optionField options { cases.collectEntries({[it.stringId, it.title]}) }
             }
-            """;
+            """, "%s", CREATED_PLACE_ID);
 
+    protected static final String SEARCH_RELATION_FUNCTION_TEMPLATE = String.format("""
+            { prefixField, String... entityIds ->
+            
+            def fieldIds = [%s];
+            def missingFieldIds = new HashSet(fieldIds);
+            
+            def query = Qcase.case$.processIdentifier.eq(prefixField.value + "%s").and(QCase.case$.activePlaces.get("%s").eq(1));
+            for (def i = 0; i < fieldIds.length; i++) {
+                if (entityIds.length >= i) {
+                    break;
+                }
+                
+                def id = entityIds[i];
+                if (id != null) {
+                    query = query.and(QCase.case$.dataSet.get(fieldIds[i]).value.eq(id));
+                    missingFieldIds.remove(fieldIds[i]);
+                }
+            }
+            
+            def relationCases = findCases({ query });
+            def idMap = new LinkedHashMap();
+            def missingEntityIds = new HashSet();
+            
+            for (def relationCase : relationCases) {
+                def entry = [];
+                for (def fieldId : fieldIds) {
+                    if (!missingFieldIds.contains(fieldId)) {
+                        entry.add(null);
+                        continue;
+                    }
+                    def entityId = relationCase.dataSet.get(fieldId).value;
+                    entry.add(entityId);
+                    missingEntityIds.add(entityId);
+                }
+                idMap.put(relationCase, entry);
+            }
+            
+            def entityCases = findCases({ it._id.in(missingEntityIds) })
+            
+            def entityMap = entityCases.collectEntries( {[it.stringId, it]} )
+            
+            return idMap.collectEntries({ [it.ketKey(), it.getValue().collect({ entityMap.get(it) })] })
+            }
+            """, "%s", "%s", CREATED_PLACE_ID);
     protected static final String FILL_OPTIONS_ACTION_TEMPLATE = """
             optionField: f.this,
             prefix: f.%s;
@@ -170,6 +215,7 @@ public class RelationConverter {
     protected void createRelationWorkflow() {
         CrudNet crudNet = createCrudNet(result, "relation");
 
+        List<String> selectorFieldIds = new ArrayList<>();
         char suffix = 'A';
         for (EntityContext context : entities) {
             // Functions
@@ -182,8 +228,11 @@ public class RelationConverter {
             context.setOldValueField(old);
             result.getData().add(old);
 
+            selectorFieldIds.add(context.getSelectorField().getId());
+
             suffix++;
         }
+        result.getFunction().add(createFunction(Scope.NAMESPACE, "search", String.format(SEARCH_RELATION_FUNCTION_TEMPLATE, String.join(", ", selectorFieldIds), result.getId())));
 
         // Actions
         // prefix

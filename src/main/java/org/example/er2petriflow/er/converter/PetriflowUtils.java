@@ -372,10 +372,13 @@ public abstract class PetriflowUtils {
     }
 
     public static Function createFunction(String name, String body) {
+        return createFunction(Scope.PROCESS, name, body);
+    }
+    public static Function createFunction(Scope scope, String name, String body) {
         Function result = new Function();
         result.setName(name);
         result.setValue(body);
-        result.setScope(Scope.PROCESS);
+        result.setScope(scope);
         return result;
     }
 
