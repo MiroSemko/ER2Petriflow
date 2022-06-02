@@ -78,23 +78,6 @@ public class RelationConverter {
             %s(optionField, prefix);
             """;
 
-    protected static final String RESOLVE_PREFIX_ACTION_TEMPLATE = """
-            prefix: f.%s;
-
-            String[] splitProcessIdentifier = useCase.processIdentifier.split("_", 2)
-            if (splitProcessIdentifier.length < 2) {
-                change prefix value { ""; }
-                return;
-            }
-
-            change prefix value {
-                if (splitProcessIdentifier[0].matches("[0-9a-f]{24}")) {
-                    return splitProcessIdentifier[0] + "_";
-                }
-                return "";
-            }
-            """;
-
     private static final String COPY_VALUE_ACTION_TEMPLATE = """
             from: f.%s,
             to: f.%s;
@@ -102,14 +85,34 @@ public class RelationConverter {
             change to value { from.value }
             """;
 
-    private static final String CHANGE_ENTITY_TASKREF_ACTION_TEMPLATE = String.format("""
-            caseRef: f.%s,
-            taskRef: f.%s;
-                        
-            def viewTasks = findTasks({it.caseId.in(caseRef.value) & it.transitionId.eq("%s")})
-                        
-            change taskRef value { viewTasks.collect({ it.stringId }) }
-            """, "%s", "%s", READ_TRANSITION_ID);
+    private static final String VIEW_RELATION_ENTITY_ACTION_TEMPLATE = String.format("""
+            prefix: f.%s,
+            htmlArea: f.%s;
+            
+            def relatedCases = "${prefix.value}%s.search"(%s);
+            
+            def builder = new StringBuilder();
+            builder.append(<![CDATA[""\"<table style="width:100%%%%">""\"]]>)
+            
+            relatedCases.each {
+            
+                builder.append(<![CDATA[""\"<tr><td>""\"]]>)
+                builder.append(it.key.stringId)
+                builder.append(<![CDATA[""\"</td>""\"]]>)
+                
+                it.value.each {
+                    builder.append(<![CDATA[""\"<td>""\"]]>)
+                    builder.append(it != null ? it.stringId : "-")
+                    builder.append(<![CDATA[""\"</td>""\"]]>)
+                }
+                
+                builder.append(<![CDATA[""\"</tr>""\"]]>)
+            }
+            
+            builder.append(<![CDATA[""\"</table>""\"]]>)
+            
+            change htmlArea value {builder.toString()}
+            """, PROCESS_PREFIX_FIELD_ID, "%s", "%s", "%s");
 
     private final Relation relation;
     private final List<EntityContext> entities;
@@ -143,9 +146,6 @@ public class RelationConverter {
             result.getData().add(selector);
             suffix++;
         }
-
-        // for demo.netgrif.com group id resolution
-        result.getData().add(createDataVariable(PROCESS_PREFIX_FIELD_ID, "", DataType.TEXT));
     }
 
     protected Data createForRelation(Entity entity, String fieldId) {
@@ -157,16 +157,17 @@ public class RelationConverter {
     }
 
     protected void updateEntityWorkflows() {
-        for (var context : entities) {
-            updateEntityProcess(context);
+        for (int i = 0; i < entities.size(); i++) {
+            var context = entities.get(i);
+            updateEntityProcess(context, i);
             context.getEntity().incrementProcessedRelations();
         }
     }
 
-    protected void updateEntityProcess (EntityContext context) {
+    protected void updateEntityProcess (EntityContext context, int i) {
         Data htmlArea = addDataVariableToEntity(ENTITY_HTML_AREA_PREFIX + relation.getProcessIdentifier(), DataType.TEXT, context.getEntity(), "htmltextarea");
 
-        // TODO pre-get action
+        addDataEventAction(htmlArea, DataEventType.GET, EventPhaseType.PRE, String.format(VIEW_RELATION_ENTITY_ACTION_TEMPLATE, htmlArea.getId(), relation.getId(),("null, ".repeat(i) + "useCase.stringId")));
 
         var petriflow = context.getEntity().getPetriflow();
         var place = petriflow.getPlace().stream().filter(p -> p.getId().equals(CREATED_PLACE_ID)).findFirst().orElseThrow(() -> new IllegalStateException(String.format("Entity net does not have a place with id '%s'", CREATED_PLACE_ID)));
@@ -227,9 +228,6 @@ public class RelationConverter {
         result.getFunction().add(createFunction(Scope.NAMESPACE, "search", String.format(SEARCH_RELATION_FUNCTION_TEMPLATE, String.join(", ", selectorFieldIds), result.getId())));
 
         // Actions
-        // prefix
-        addCreateCaseAction(result, String.format(RESOLVE_PREFIX_ACTION_TEMPLATE, PROCESS_PREFIX_FIELD_ID));
-
         // selector actions
         for (EntityContext context : entities) {
             addDataEventAction(context.getSelectorField(), DataEventType.GET, EventPhaseType.POST, String.format(

@@ -29,6 +29,23 @@ public abstract class PetriflowUtils {
     protected static final int CELL_WIDTH = 40;
     protected static final int CELL_HEIGHT = 40;
 
+    protected static final String RESOLVE_PREFIX_ACTION_TEMPLATE = """
+            prefix: f.%s;
+
+            String[] splitProcessIdentifier = useCase.processIdentifier.split("_", 2)
+            if (splitProcessIdentifier.length < 2) {
+                change prefix value { ""; }
+                return;
+            }
+
+            change prefix value {
+                if (splitProcessIdentifier[0].matches("[0-9a-f]{24}")) {
+                    return splitProcessIdentifier[0] + "_";
+                }
+                return "";
+            }
+            """;
+
 
     public static void setDocumentMetadata(Document net, String initials, String identifier, String title) {
         net.setDefaultRole(true);
@@ -77,6 +94,11 @@ public abstract class PetriflowUtils {
 
         // Actions
         createDeleteCaseAction(t4);
+
+        // Prefix for demo.netgrif.com group id resolution
+        petriflow.getData().add(createDataVariable(PROCESS_PREFIX_FIELD_ID, "", DataType.TEXT));
+
+        addCreateCaseAction(petriflow, String.format(RESOLVE_PREFIX_ACTION_TEMPLATE, PROCESS_PREFIX_FIELD_ID));
 
         return new CrudNet(t1, t2, t3, t4, p2);
     }
