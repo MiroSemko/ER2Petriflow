@@ -17,9 +17,7 @@ public class RelationConverter {
 
     protected static final String ENTITY_SELECTION_PREFIX = "entity";
     protected static final String OLD_VALUE_PREFIX = "oldValue";
-    protected static final String CASE_REF_PREFIX = "relation_";
-    protected static final String TASK_REF_PREFIX = "viewRelation_";
-    protected static final String SET_RELATION_TRANSITION_PREFIX = "update_";
+    protected static final String ENTITY_HTML_AREA_PREFIX = "html_";
     protected static final String VIEW_RELATION_TRANSITION_PREFIX = "read_";
 
     protected static final String FILL_OPTIONS_FUNCTION_TEMPLATE = String.format("""
@@ -160,40 +158,25 @@ public class RelationConverter {
 
     protected void updateEntityWorkflows() {
         for (var context : entities) {
-            addRelationFieldsToEntity(context);
-            addRelationTransitionsToEntity(context);
+            updateEntityProcess(context);
             context.getEntity().incrementProcessedRelations();
         }
     }
 
-    protected void addRelationFieldsToEntity(EntityContext context) {
-        // TODO should be a case ref field, but demo.netgrif.com does not support case refs correctly
-        var caseRef = addDataVariableToEntity(CASE_REF_PREFIX + relation.getProcessIdentifier(), DataType.TASK_REF, context.getEntity());
-        context.setCaseRefFieldId(caseRef.getId());
-        context.setTaskRefFieldId(
-                addDataVariableToEntity(TASK_REF_PREFIX + relation.getProcessIdentifier(), DataType.TASK_REF, context.getEntity()).getId()
-        );
+    protected void updateEntityProcess (EntityContext context) {
+        Data htmlArea = addDataVariableToEntity(ENTITY_HTML_AREA_PREFIX + relation.getProcessIdentifier(), DataType.TEXT, context.getEntity(), "htmltextarea");
 
-        addDataEventAction(caseRef, DataEventType.SET, EventPhaseType.POST, String.format(CHANGE_ENTITY_TASKREF_ACTION_TEMPLATE, caseRef.getId(), context.getTaskRefFieldId()));
-    }
+        // TODO pre-get action
 
-    protected void addRelationTransitionsToEntity(EntityContext context) {
         var petriflow = context.getEntity().getPetriflow();
         var place = petriflow.getPlace().stream().filter(p -> p.getId().equals(CREATED_PLACE_ID)).findFirst().orElseThrow(() -> new IllegalStateException(String.format("Entity net does not have a place with id '%s'", CREATED_PLACE_ID)));
-        Transition t1 = crateTransition(SET_RELATION_TRANSITION_PREFIX + relation.getProcessIdentifier(), 4, 6 + context.getEntity().getProcessedRelations() * 2, petriflow);
-        context.setCaseRefTransitionId(t1.getId());
-        Transition t2 = crateTransition(VIEW_RELATION_TRANSITION_PREFIX + relation.getProcessIdentifier(), "View " + relation.getName(), 6, 6 + context.getEntity().getProcessedRelations() * 2, petriflow);
+        Transition t = crateTransition(VIEW_RELATION_TRANSITION_PREFIX + relation.getProcessIdentifier(), "View " + relation.getName(), 6, 6 + context.getEntity().getProcessedRelations() * 2, petriflow);
 
-        addSystemRolePerform(t1);
-        referenceDataOnTransitions(context.getCaseRefFieldId(), Behavior.EDITABLE, t1);
+        referenceDataOnTransitions(htmlArea.getId(), Behavior.VISIBLE, t);
 
-        referenceDataOnTransitions(context.getTaskRefFieldId(), Behavior.VISIBLE, t2);
+        petriflow.getTransition().add(t);
 
-        petriflow.getTransition().add(t1);
-        petriflow.getTransition().add(t2);
-
-        addArc(petriflow, place, t1, ArcType.READ);
-        addArc(petriflow, place, t2, ArcType.READ);
+        addArc(petriflow, place, t, ArcType.READ);
     }
 
     protected Data addDataVariableToEntity(String proposedId, DataType type, Entity entity) {
@@ -208,6 +191,15 @@ public class RelationConverter {
 
         Data variable = createDataVariable(finalId, type);
         petriflow.getData().add(variable);
+
+        return variable;
+    }
+    protected Data addDataVariableToEntity(String proposedId, DataType type, Entity entity, String component) {
+        var variable = addDataVariableToEntity(proposedId, type, entity);
+
+        var c = new Component();
+        c.setName(component);
+        variable.setComponent(c);
 
         return variable;
     }
