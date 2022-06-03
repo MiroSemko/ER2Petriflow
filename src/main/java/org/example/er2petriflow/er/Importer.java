@@ -123,7 +123,7 @@ public class Importer {
 
     protected Attribute parseAttribute(Shape attribute) {
         String[] split = attribute.getDetails().getName().split(":", 2);
-        return new Attribute(split[0].trim(), AttributeType.resolve(split[1].trim()));
+        return new Attribute(split[0].trim(), AttributeType.resolve(split[1].trim()), attribute.getDetails().getIsUnique());
     }
 
     protected void parseRelations() {

@@ -1,5 +1,6 @@
 package org.example.er2petriflow.er;
 
+import org.example.er2petriflow.er.converter.AttributeContext;
 import org.example.er2petriflow.er.converter.RelationConverter;
 import org.example.er2petriflow.er.domain.Attribute;
 import org.example.er2petriflow.er.domain.ERDiagram;
@@ -13,6 +14,12 @@ import java.util.stream.Collectors;
 import static org.example.er2petriflow.er.converter.PetriflowUtils.*;
 
 public class Converter {
+
+    protected static final String CHANGE_ENTITY_CASE_TITLE_ACTION_TEMPLATE = """
+            %s;
+            
+            changeCaseProperty "title" about { %s }
+            """;
 
     public List<Document> convertToPetriflows(ERDiagram diagram) {
         var result = convertEntities(diagram.getEntities());
@@ -46,17 +53,36 @@ public class Converter {
     }
 
     protected void convertEntityAttributes(Entity entity, Document result) {
-        result.getData().addAll(
-                entity.getAttributes().stream().map(this::convertAttribute).collect(Collectors.toList())
-        );
+        var titleAttributes = new ArrayList<Data>();
+        var allAttributes = entity.getAttributes().stream()
+                .map(this::convertAttribute)
+                .peek(context -> {
+                    if (context.getAttribute().isTitlePart()) {
+                        titleAttributes.add(context.getVariable());
+                    }
+                })
+                .map(AttributeContext::getVariable)
+                .collect(Collectors.toList());
+
+        if (titleAttributes.size() > 0) {
+            String refs = titleAttributes.stream().map(d -> String.format("%s: f.%s", d.getId(), d.getId())).collect(Collectors.joining(",\n"));
+            String value = titleAttributes.stream().map(d -> String.format("%s.value", d.getId())).collect(Collectors.joining(" + \" \" + "));
+            String actionCode = String.format(CHANGE_ENTITY_CASE_TITLE_ACTION_TEMPLATE, refs, value);
+
+            for (Data d : titleAttributes) {
+                addDataEventAction(d, DataEventType.SET, EventPhaseType.POST, actionCode);
+            }
+        }
+
+        result.getData().addAll(allAttributes);
     }
 
-    protected Data convertAttribute(Attribute attribute) {
-        return createDataVariable(
+    protected AttributeContext convertAttribute(Attribute attribute) {
+        return new AttributeContext(attribute, createDataVariable(
                 attribute.getVariableIdentifier(),
                 attribute.getName(),
                 attribute.getType().getMapping()
-        );
+        ));
     }
 
     protected void createEntityWorkflow(Document petriflow) {

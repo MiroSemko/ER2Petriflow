@@ -20,14 +20,14 @@ public class ERDiagram {
     public void addEntity(Entity entity) {
         entityCounter++;
         entity.setId(entityCounter);
-        entity.setProcessIdentifier("Entity" + entityCounter);
+        entity.setProcessIdentifier(entity.getName());
         entities.put(entityCounter, entity);
     }
 
     public void addRelation(Relation relation) {
         relationCounter++;
         relation.setId(relationCounter);
-        relation.setProcessIdentifier("Relation" + relationCounter);
+        relation.setProcessIdentifier(relation.getName());
         relations.put(relationCounter, relation);
     }
 
