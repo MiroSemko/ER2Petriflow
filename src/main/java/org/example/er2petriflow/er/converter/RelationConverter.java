@@ -33,15 +33,15 @@ public class RelationConverter {
             def fieldIds = [%s];
             def missingFieldIds = new HashSet(fieldIds);
             
-            def query = Qcase.case$.processIdentifier.eq(prefixField.value + "%s").and(QCase.case$.activePlaces.get("%s").eq(1));
-            for (def i = 0; i < fieldIds.length; i++) {
+            def query = com.netgrif.application.engine.workflow.domain.QCase.case$.processIdentifier.eq(prefixField.value + "%s").and(com.netgrif.application.engine.workflow.domain.QCase.case$.activePlaces.get("%s").eq(1));
+            for (def i = 0; i < fieldIds.size; i++) {
                 if (entityIds.length >= i) {
                     break;
                 }
                 
                 def id = entityIds[i];
                 if (id != null) {
-                    query = query.and(QCase.case$.dataSet.get(fieldIds[i]).value.eq(id));
+                    query = query.and(com.netgrif.application.engine.workflow.domain.QCase.case$.dataSet.get(fieldIds[i]).value.eq(id));
                     missingFieldIds.remove(fieldIds[i]);
                 }
             }
@@ -68,7 +68,7 @@ public class RelationConverter {
             
             def entityMap = entityCases.collectEntries( {[it.stringId, it]} )
             
-            return idMap.collectEntries({ [it.ketKey(), it.getValue().collect({ entityMap.get(it) })] })
+            return idMap.collectEntries({ [it.key, it.value.collect({ entityMap.get(it) })] })
             }
             """, "%s", "%s", CREATED_PLACE_ID);
     protected static final String FILL_OPTIONS_ACTION_TEMPLATE = """
@@ -89,30 +89,23 @@ public class RelationConverter {
             prefix: f.%s,
             htmlArea: f.%s;
             
-            def relatedCases = "${prefix.value}%s.search"(%s);
+            def relatedCases = delegate."${prefix.value}%s".search(prefix, %s);
             
             def builder = new StringBuilder();
-            //builder.append(<![CDATA[""\"<table style="width:100%%%%">""\"]]>)
             
             relatedCases.each {
             
-                //builder.append(<![CDATA[""\"<tr><td>""\"]]>)
                 builder.append(it.key.stringId)
-                //builder.append(<![CDATA[""\"</td>""\"]]>)
                 
                 it.value.each {
                     builder.append(" | ")
-                    //builder.append(<![CDATA[""\"<td>""\"]]>)
                     builder.append(it != null ? it.stringId : "-")
-                    //builder.append(<![CDATA[""\"</td>""\"]]>)
                 }
                 
                 builder.append("\\n")
                 
-                //builder.append(<![CDATA[""\"</tr>""\"]]>)
             }
             
-            //builder.append(<![CDATA[""\"</table>""\"]]>)
             
             change htmlArea value {builder.toString()}
             """, PROCESS_PREFIX_FIELD_ID, "%s", "%s", "%s");
@@ -170,7 +163,7 @@ public class RelationConverter {
     protected void updateEntityProcess (EntityContext context, int i) {
         Data htmlArea = addDataVariableToEntity(ENTITY_HTML_AREA_PREFIX + relation.getProcessIdentifier(), DataType.TEXT, context.getEntity(), "htmltextarea");
 
-        addDataEventAction(htmlArea, DataEventType.GET, EventPhaseType.PRE, String.format(VIEW_RELATION_ENTITY_ACTION_TEMPLATE, htmlArea.getId(), relation.getId(),("null, ".repeat(i) + "useCase.stringId")));
+        addDataEventAction(htmlArea, DataEventType.GET, EventPhaseType.PRE, String.format(VIEW_RELATION_ENTITY_ACTION_TEMPLATE, htmlArea.getId(), relation.getProcessIdentifier(), ("null, ".repeat(i) + "useCase.stringId")));
 
         var petriflow = context.getEntity().getPetriflow();
         var place = petriflow.getPlace().stream().filter(p -> p.getId().equals(CREATED_PLACE_ID)).findFirst().orElseThrow(() -> new IllegalStateException(String.format("Entity net does not have a place with id '%s'", CREATED_PLACE_ID)));
@@ -224,7 +217,7 @@ public class RelationConverter {
             context.setOldValueField(old);
             result.getData().add(old);
 
-            selectorFieldIds.add(context.getSelectorField().getId());
+            selectorFieldIds.add(String.format("\"%s\"", context.getSelectorField().getId()));
 
             suffix++;
         }
