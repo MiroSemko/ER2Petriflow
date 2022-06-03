@@ -34,8 +34,8 @@ public class RelationConverter {
             def missingFieldIds = new HashSet(fieldIds);
             
             def query = com.netgrif.application.engine.workflow.domain.QCase.case$.processIdentifier.eq(prefixField.value + "%s").and(com.netgrif.application.engine.workflow.domain.QCase.case$.activePlaces.get("%s").eq(1));
-            for (def i = 0; i < fieldIds.size; i++) {
-                if (entityIds.length >= i) {
+            for (def i = 0; i < fieldIds.size(); i++) {
+                if (entityIds.size() <= i) {
                     break;
                 }
                 
@@ -99,7 +99,7 @@ public class RelationConverter {
                 
                 it.value.each {
                     builder.append(" | ")
-                    builder.append(it != null ? it.stringId : "-")
+                    builder.append(it != null ? it.title : "-")
                 }
                 
                 builder.append("\\n")
