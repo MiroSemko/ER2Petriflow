@@ -95,7 +95,7 @@ public class RelationConverter {
             
             relatedCases.each {
             
-                builder.append(it.key.stringId)
+                builder.append(it.key.title)
                 
                 it.value.each {
                     builder.append(" | ")
