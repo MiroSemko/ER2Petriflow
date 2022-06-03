@@ -6,16 +6,20 @@ import org.example.er2petriflow.er.domain.Attribute;
 import org.example.er2petriflow.er.domain.ERDiagram;
 import org.example.er2petriflow.er.domain.Entity;
 import org.example.er2petriflow.er.domain.Relation;
-import org.example.er2petriflow.generated.petriflow.*;
+import org.example.er2petriflow.generated.petriflow.Data;
+import org.example.er2petriflow.generated.petriflow.DataEventType;
+import org.example.er2petriflow.generated.petriflow.Document;
+import org.example.er2petriflow.generated.petriflow.EventPhaseType;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.example.er2petriflow.er.converter.PetriflowUtils.*;
 
 public class Converter {
 
-    protected static final String CHANGE_ENTITY_CASE_TITLE_ACTION_TEMPLATE = """
+    protected static final String CHANGE_CASE_TITLE_ACTION_TEMPLATE = """
             %s;
             
             changeCaseProperty "title" about { %s }
@@ -65,9 +69,7 @@ public class Converter {
                 .collect(Collectors.toList());
 
         if (titleAttributes.size() > 0) {
-            String refs = titleAttributes.stream().map(d -> String.format("%s: f.%s", d.getId(), d.getId())).collect(Collectors.joining(",\n"));
-            String value = titleAttributes.stream().map(d -> String.format("%s.value", d.getId())).collect(Collectors.joining(" + \" \" + "));
-            String actionCode = String.format(CHANGE_ENTITY_CASE_TITLE_ACTION_TEMPLATE, refs, value);
+            String actionCode = createChangeTitleActionCode(titleAttributes, Data::getId, "%s.value");
 
             for (Data d : titleAttributes) {
                 addDataEventAction(d, DataEventType.SET, EventPhaseType.POST, actionCode);
@@ -87,5 +89,11 @@ public class Converter {
 
     protected void createEntityWorkflow(Document petriflow) {
         createCrudNet(petriflow, "instance");
+    }
+
+    public static <T> String createChangeTitleActionCode(List<T> individuals, Function<T, String> individualConverter, String valueTemplate) {
+        String refs = individuals.stream().map(i -> String.format("%s: f.%s", individualConverter.apply(i), individualConverter.apply(i))).collect(Collectors.joining(",\n"));
+        String value = individuals.stream().map(i -> String.format(valueTemplate, individualConverter.apply(i))).collect(Collectors.joining(" + \" \" + "));
+        return String.format(CHANGE_CASE_TITLE_ACTION_TEMPLATE, refs, value);
     }
 }

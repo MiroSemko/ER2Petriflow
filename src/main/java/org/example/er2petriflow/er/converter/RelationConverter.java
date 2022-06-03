@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.example.er2petriflow.er.Converter.createChangeTitleActionCode;
 import static org.example.er2petriflow.er.converter.PetriflowUtils.*;
 import static org.example.er2petriflow.er.converter.PetriflowUtils.PROCESS_PREFIX_FIELD_ID;
 
@@ -205,6 +206,7 @@ public class RelationConverter {
         CrudNet crudNet = createCrudNet(result, "relation");
 
         List<String> selectorFieldIds = new ArrayList<>();
+        List<String> selectorFieldIdsWrapped = new ArrayList<>();
         char suffix = 'A';
         for (EntityContext context : entities) {
             // Functions
@@ -217,11 +219,14 @@ public class RelationConverter {
             context.setOldValueField(old);
             result.getData().add(old);
 
-            selectorFieldIds.add(String.format("\"%s\"", context.getSelectorField().getId()));
+            selectorFieldIds.add(context.getSelectorField().getId());
+            selectorFieldIdsWrapped.add(String.format("\"%s\"", context.getSelectorField().getId()));
 
             suffix++;
         }
-        result.getFunction().add(createFunction(Scope.NAMESPACE, "search", String.format(SEARCH_RELATION_FUNCTION_TEMPLATE, String.join(", ", selectorFieldIds), result.getId())));
+        result.getFunction().add(createFunction(Scope.NAMESPACE, "search", String.format(SEARCH_RELATION_FUNCTION_TEMPLATE, String.join(", ", selectorFieldIdsWrapped), result.getId())));
+
+        String changeTitleActionCode = createChangeTitleActionCode(selectorFieldIds, java.util.function.Function.identity(), "%1$s.options.get(%1$s.value).defaultValue");
 
         // Actions
         // selector actions
@@ -242,6 +247,8 @@ public class RelationConverter {
                     context.getOldValueField().getId(),
                     context.getSelectorField().getId()
             ), crudNet.getCreate(), crudNet.getUpdate());
+
+            addEventActionToTransitions(EventType.FINISH, EventPhaseType.POST, changeTitleActionCode, crudNet.getCreate(), crudNet.getUpdate());
         }
     }
 }

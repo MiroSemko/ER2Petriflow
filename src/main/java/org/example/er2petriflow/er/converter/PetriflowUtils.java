@@ -291,7 +291,8 @@ public abstract class PetriflowUtils {
         }
     }
 
-    public static void addEventActionToTransitions(EventType event, EventPhaseType phase, String actionCode, Transition... transitions) {
+    public static void addEventActionToTransitions(EventType event, EventPhaseType phase, String actionCode, Transition t0, Transition... transitions) {
+        addTransitionEventAction(t0, event, phase, actionCode);
         for (Transition t : transitions) {
             addTransitionEventAction(t, event, phase, actionCode);
         }
