@@ -1,0 +1,196 @@
+﻿{
+  "version": 2,
+  "www": "erdplus.com",
+  "shapes": [
+    {
+      "type": "Entity",
+      "details": {
+        "name": "Kind",
+        "type": "regular",
+        "x": 631,
+        "y": 331.5,
+        "isDisjointed": true,
+        "isTotalSpecialization": true,
+        "isSubtype": false,
+        "supertypeEntityId": null,
+        "id": 13
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Name: string",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": true,
+        "x": 500,
+        "y": 188.5,
+        "id": 14
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Vorname: string",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": true,
+        "x": 634,
+        "y": 184.5,
+        "id": 16
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Geburtsdatum: date",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 778,
+        "y": 188.5,
+        "id": 18
+      }
+    },
+    {
+      "type": "Entity",
+      "details": {
+        "name": "ELternteil",
+        "type": "regular",
+        "x": 1087,
+        "y": 342.5,
+        "isDisjointed": true,
+        "isTotalSpecialization": true,
+        "isSubtype": false,
+        "supertypeEntityId": null,
+        "id": 20
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Name: string",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": true,
+        "x": 1058,
+        "y": 254.5,
+        "id": 21
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Vorname: string",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": true,
+        "x": 1194,
+        "y": 266.5,
+        "id": 23
+      }
+    },
+    {
+      "type": "Relationship",
+      "details": {
+        "name": "Erzieht",
+        "isIdentifying": false,
+        "x": 863,
+        "y": 393.5,
+        "slots": [
+          {
+            "slotIndex": 0,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 13
+          },
+          {
+            "slotIndex": 1,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 20
+          }
+        ],
+        "id": 25
+      }
+    }
+  ],
+  "connectors": [
+    {
+      "type": "Connector",
+      "details": {
+        "id": 15
+      },
+      "source": 14,
+      "destination": 13
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 17
+      },
+      "source": 16,
+      "destination": 13
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 19
+      },
+      "source": 18,
+      "destination": 13
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 22
+      },
+      "source": 21,
+      "destination": 20
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 24
+      },
+      "source": 23,
+      "destination": 20
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 0,
+        "id": 26
+      },
+      "source": 13,
+      "destination": 25
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 1,
+        "id": 27
+      },
+      "source": 20,
+      "destination": 25
+    }
+  ],
+  "width": 2000,
+  "height": 1000
+}

@@ -1,0 +1,444 @@
+﻿{
+  "version": 2,
+  "www": "erdplus.com",
+  "shapes": [
+    {
+      "type": "Entity",
+      "details": {
+        "name": "E1",
+        "type": "regular",
+        "x": 152,
+        "y": 193.5,
+        "isDisjointed": true,
+        "isTotalSpecialization": true,
+        "isSubtype": false,
+        "supertypeEntityId": null,
+        "id": 1
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Attr1: string",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 152,
+        "y": 109.5,
+        "id": 2
+      }
+    },
+    {
+      "type": "Entity",
+      "details": {
+        "name": "E2",
+        "type": "regular",
+        "x": 342,
+        "y": 197.5,
+        "isDisjointed": true,
+        "isTotalSpecialization": true,
+        "isSubtype": false,
+        "supertypeEntityId": null,
+        "id": 4
+      }
+    },
+    {
+      "type": "Entity",
+      "details": {
+        "name": "E3",
+        "type": "regular",
+        "x": 512,
+        "y": 203.5,
+        "isDisjointed": true,
+        "isTotalSpecialization": true,
+        "isSubtype": false,
+        "supertypeEntityId": null,
+        "id": 5
+      }
+    },
+    {
+      "type": "Entity",
+      "details": {
+        "name": "E4",
+        "type": "regular",
+        "x": 693,
+        "y": 204.5,
+        "isDisjointed": true,
+        "isTotalSpecialization": true,
+        "isSubtype": false,
+        "supertypeEntityId": null,
+        "id": 6
+      }
+    },
+    {
+      "type": "Entity",
+      "details": {
+        "name": "E5",
+        "type": "regular",
+        "x": 844,
+        "y": 205.5,
+        "isDisjointed": true,
+        "isTotalSpecialization": true,
+        "isSubtype": false,
+        "supertypeEntityId": null,
+        "id": 7
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Attr2: string",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 342,
+        "y": 113.5,
+        "id": 8
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Attr3: string",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 512,
+        "y": 119.5,
+        "id": 10
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Attr4: string",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 693,
+        "y": 120.5,
+        "id": 12
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Attr5: string",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 844,
+        "y": 121.5,
+        "id": 14
+      }
+    },
+    {
+      "type": "Entity",
+      "details": {
+        "name": "Multirelation",
+        "type": "associative",
+        "x": 513,
+        "y": 390.5,
+        "isDisjointed": true,
+        "isTotalSpecialization": true,
+        "isSubtype": false,
+        "supertypeEntityId": null,
+        "id": 19
+      }
+    },
+    {
+      "type": "Relationship",
+      "details": {
+        "name": "R1",
+        "isIdentifying": false,
+        "x": 257,
+        "y": 319.5,
+        "slots": [
+          {
+            "slotIndex": 0,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 1
+          },
+          {
+            "slotIndex": 1,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 19
+          }
+        ],
+        "id": 20
+      }
+    },
+    {
+      "type": "Relationship",
+      "details": {
+        "name": "R2",
+        "isIdentifying": false,
+        "x": 394,
+        "y": 315.5,
+        "slots": [
+          {
+            "slotIndex": 0,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 4
+          },
+          {
+            "slotIndex": 1,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 19
+          }
+        ],
+        "id": 21
+      }
+    },
+    {
+      "type": "Relationship",
+      "details": {
+        "name": "R3",
+        "isIdentifying": false,
+        "x": 521,
+        "y": 318.5,
+        "slots": [
+          {
+            "slotIndex": 0,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 5
+          },
+          {
+            "slotIndex": 1,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 19
+          }
+        ],
+        "id": 22
+      }
+    },
+    {
+      "type": "Relationship",
+      "details": {
+        "name": "R4",
+        "isIdentifying": false,
+        "x": 667,
+        "y": 314.5,
+        "slots": [
+          {
+            "slotIndex": 0,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 6
+          },
+          {
+            "slotIndex": 1,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 19
+          }
+        ],
+        "id": 23
+      }
+    },
+    {
+      "type": "Relationship",
+      "details": {
+        "name": "R5",
+        "isIdentifying": false,
+        "x": 788,
+        "y": 332.5,
+        "slots": [
+          {
+            "slotIndex": 0,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 7
+          },
+          {
+            "slotIndex": 1,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 19
+          }
+        ],
+        "id": 24
+      }
+    }
+  ],
+  "connectors": [
+    {
+      "type": "Connector",
+      "details": {
+        "id": 3
+      },
+      "source": 2,
+      "destination": 1
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 9
+      },
+      "source": 8,
+      "destination": 4
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 11
+      },
+      "source": 10,
+      "destination": 5
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 13
+      },
+      "source": 12,
+      "destination": 6
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 15
+      },
+      "source": 14,
+      "destination": 7
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 0,
+        "id": 25
+      },
+      "source": 1,
+      "destination": 20
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 1,
+        "id": 26
+      },
+      "source": 19,
+      "destination": 20
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 0,
+        "id": 27
+      },
+      "source": 4,
+      "destination": 21
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 1,
+        "id": 28
+      },
+      "source": 19,
+      "destination": 21
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 0,
+        "id": 29
+      },
+      "source": 5,
+      "destination": 22
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 1,
+        "id": 30
+      },
+      "source": 19,
+      "destination": 22
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 0,
+        "id": 31
+      },
+      "source": 6,
+      "destination": 23
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 1,
+        "id": 32
+      },
+      "source": 19,
+      "destination": 23
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 0,
+        "id": 33
+      },
+      "source": 7,
+      "destination": 24
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 1,
+        "id": 34
+      },
+      "source": 19,
+      "destination": 24
+    }
+  ],
+  "width": 2000,
+  "height": 1000
+}
