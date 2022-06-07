@@ -132,8 +132,8 @@ public class RelationConverter {
     }
 
     protected void createRelationAttributes() {
-        if (relation.getConnections().size() != 2) {
-            throw new UnsupportedRelationException("Only binary relationships are currently supported!", relation);
+        if (relation.getConnections().size() == 1) {
+            throw new UnsupportedRelationException("Unary relations are not supported!", relation);
         }
 
         char suffix = 'A';

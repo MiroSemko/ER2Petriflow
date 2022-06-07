@@ -12,6 +12,7 @@ public class Details {
     private String name;
     private Integer id;
     private boolean isUnique;
+    private String type;
 
     public boolean getIsUnique() {
         return isUnique;
