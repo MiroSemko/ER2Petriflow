@@ -130,9 +130,16 @@ public class Importer {
         for (Details relation: relations) {
             Relation r = new Relation(relation.getName());
             for (Connector c : connectorMap.get(relation.getId())) {
-                r.addEntity(entityMap.get(resolveDestinationShape(c).getDetails().getId()));
+                parseRelationConnection(r,resolveDestinationShape(c));
             }
             result.addRelation(r);
+        }
+    }
+
+    protected void parseRelationConnection(Relation relation, Shape connection) {
+        switch (connection.getType()) {
+            case SHAPE_TYPE_ENTITY -> relation.addEntity(entityMap.get(connection.getDetails().getId()));
+            case SHAPE_TYPE_ATTRIBUTE -> relation.addAttribute(parseAttribute(connection));
         }
     }
 

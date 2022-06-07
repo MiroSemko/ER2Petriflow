@@ -67,6 +67,7 @@ public class ER2PetriflowCLI {
             e.printStackTrace();
             System.err.println("Petriflows could not be serialized into XML! Look above for Exception stacktrace.");
         } catch (IOException e) {
+            e.printStackTrace();
             System.err.println("An error has occurred while writing the output file.");
         } finally {
             closeStream(outputStream);
