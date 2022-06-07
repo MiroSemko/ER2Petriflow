@@ -1,6 +1,6 @@
 package org.example.er2petriflow.er.converter;
 
-import org.example.er2petriflow.er.UnsupportedRelationException;
+import org.example.er2petriflow.er.throwable.UnsupportedRelationException;
 import org.example.er2petriflow.er.domain.Entity;
 import org.example.er2petriflow.er.domain.Relation;
 import org.example.er2petriflow.generated.petriflow.*;

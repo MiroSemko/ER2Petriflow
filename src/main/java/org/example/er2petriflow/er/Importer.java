@@ -7,6 +7,8 @@ import org.example.er2petriflow.er.json.Connector;
 import org.example.er2petriflow.er.json.Details;
 import org.example.er2petriflow.er.json.Diagram;
 import org.example.er2petriflow.er.json.Shape;
+import org.example.er2petriflow.er.throwable.UnsupportedConnectorException;
+import org.example.er2petriflow.er.throwable.UnsupportedEntityException;
 import org.example.er2petriflow.util.MapUtils;
 
 import java.io.IOException;
