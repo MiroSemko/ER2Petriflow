@@ -205,6 +205,8 @@ public class RelationConverter {
     protected void createRelationWorkflow() {
         CrudNet crudNet = createCrudNet(result, "relation");
 
+        addDataGroup(crudNet.getLayout(), convertRelationAttributes());
+
         List<String> selectorFieldIds = new ArrayList<>();
         List<String> selectorFieldIdsWrapped = new ArrayList<>();
         char suffix = 'A';
@@ -250,5 +252,9 @@ public class RelationConverter {
 
             addEventActionToTransitions(EventType.FINISH, EventPhaseType.POST, changeTitleActionCode, crudNet.getCreate(), crudNet.getUpdate());
         }
+    }
+
+    protected List<Data> convertRelationAttributes() {
+        return relation.getAttributes().stream().map(PetriflowUtils::convertAttribute).peek(d -> result.getData().add(d)).collect(Collectors.toList());
     }
 }

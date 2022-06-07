@@ -14,6 +14,8 @@ public class CrudNet {
     private Transition update;
     private Transition delete;
 
+    private Transition layout;
+
     private Place created;
 
 }

@@ -1,5 +1,6 @@
 package org.example.er2petriflow.er.converter;
 
+import org.example.er2petriflow.er.domain.Attribute;
 import org.example.er2petriflow.generated.petriflow.*;
 import org.example.er2petriflow.util.IncrementingCounter;
 
@@ -100,7 +101,7 @@ public abstract class PetriflowUtils {
 
         addCreateCaseAction(petriflow, String.format(RESOLVE_PREFIX_ACTION_TEMPLATE, PROCESS_PREFIX_FIELD_ID));
 
-        return new CrudNet(t1, t2, t3, t4, p2);
+        return new CrudNet(t1, t2, t3, t4, layout, p2);
     }
 
     public static Data createDataVariable(String id, String title, DataType type) {
@@ -196,12 +197,7 @@ public abstract class PetriflowUtils {
     }
 
     public static void referenceAllData(Document pn, Transition t) {
-        DataGroup dataGroup = createDataGroup();
-        for (Data data : pn.getData().stream().filter(d -> !d.getId().equals(PROCESS_PREFIX_FIELD_ID)).collect(Collectors.toList())) {
-            DataRef ref = createDataRef(data);
-            dataGroup.getDataRef().add(ref);
-        }
-        t.getDataGroup().add(dataGroup);
+        addDataGroup(t, pn.getData().stream().filter(d -> !d.getId().equals(PROCESS_PREFIX_FIELD_ID)).collect(Collectors.toList()));
     }
 
     public static void referenceDataOnTransitions(Data data, Behavior behavior, Transition... transitions) {
@@ -210,17 +206,17 @@ public abstract class PetriflowUtils {
 
     public static void referenceDataOnTransitions(String datafieldId, Behavior behavior, Transition... transitions) {
         for (Transition t : transitions) {
-            DataGroup dataGroup = createDataGroup();
+            DataGroup dataGroup = createDataGroup(getDataGroupId(t));
             DataRef dataRef = createDataRef(datafieldId, behavior);
             dataGroup.getDataRef().add(dataRef);
             t.getDataGroup().add(dataGroup);
         }
     }
 
-    public static DataGroup createDataGroup() {
+    public static DataGroup createDataGroup(String id) {
         DataGroup dataGroup = new DataGroup();
         dataGroup.setLayout(LayoutType.LEGACY);
-        dataGroup.setId("dg");
+        dataGroup.setId(id);
         return dataGroup;
     }
 
@@ -376,6 +372,15 @@ public abstract class PetriflowUtils {
         t.getRoleRef().add(roleRef);
     }
 
+    public static void addDataGroup(Transition t, List<Data> data) {
+        DataGroup dataGroup = createDataGroup(getDataGroupId(t));
+        for (Data d : data) {
+            DataRef ref = createDataRef(d);
+            dataGroup.getDataRef().add(ref);
+        }
+        t.getDataGroup().add(dataGroup);
+    }
+
     public static CaseEvent createCaseEvent(CaseEventType type) {
         CaseEvent event = new CaseEvent();
         event.setType(type);
@@ -403,6 +408,18 @@ public abstract class PetriflowUtils {
         result.setValue(body);
         result.setScope(scope);
         return result;
+    }
+
+    public static Data convertAttribute(Attribute attribute) {
+        return createDataVariable(
+                attribute.getVariableIdentifier(),
+                attribute.getName(),
+                attribute.getType().getMapping()
+        );
+    }
+
+    protected static String getDataGroupId(Transition t) {
+        return String.format("dg%s", t.getDataGroup().size());
     }
 
     protected static Coordinates transformCoordinates(int x, int y) {

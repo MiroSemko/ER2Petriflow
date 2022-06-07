@@ -1,6 +1,7 @@
 package org.example.er2petriflow.er;
 
 import org.example.er2petriflow.er.converter.AttributeContext;
+import org.example.er2petriflow.er.converter.PetriflowUtils;
 import org.example.er2petriflow.er.converter.RelationConverter;
 import org.example.er2petriflow.er.domain.Attribute;
 import org.example.er2petriflow.er.domain.ERDiagram;
@@ -80,11 +81,7 @@ public class Converter {
     }
 
     protected AttributeContext convertAttribute(Attribute attribute) {
-        return new AttributeContext(attribute, createDataVariable(
-                attribute.getVariableIdentifier(),
-                attribute.getName(),
-                attribute.getType().getMapping()
-        ));
+        return new AttributeContext(attribute, PetriflowUtils.convertAttribute(attribute));
     }
 
     protected void createEntityWorkflow(Document petriflow) {

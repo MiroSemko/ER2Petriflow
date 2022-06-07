@@ -3,12 +3,8 @@ package org.example.er2petriflow.er.domain;
 import lombok.Getter;
 import lombok.Setter;
 import org.example.er2petriflow.generated.petriflow.Document;
-import org.example.er2petriflow.util.IncrementingCounter;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class Entity {
+public class Entity extends AttributeOwner {
 
     @Getter
     @Setter
@@ -16,10 +12,6 @@ public class Entity {
 
     @Getter
     private final String name;
-    @Getter
-    private final List<Attribute> attributes;
-
-    private final IncrementingCounter counter;
 
     @Getter
     @Setter
@@ -33,14 +25,8 @@ public class Entity {
     private int processedRelations = 0;
 
     public Entity(String name) {
+        super();
         this.name = name;
-        this.attributes = new ArrayList<>();
-        this.counter = new IncrementingCounter();
-    }
-
-    public void addAttribute(Attribute attribute) {
-        this.attributes.add(attribute);
-        attribute.setVariableIdentifier("variable" + counter.next());
     }
 
     public void incrementProcessedRelations() {
