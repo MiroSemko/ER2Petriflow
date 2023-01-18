@@ -24,6 +24,13 @@ public class ERDiagram {
         entities.put(entityCounter, entity);
     }
 
+    public void removeEntity(Entity entity){
+        //todo maybe counter?
+        entities.remove(entityCounter,entity);
+        entityCounter--;
+        entity = null;
+    }
+
     public void addRelation(Relation relation) {
         relationCounter++;
         relation.setId(relationCounter);
