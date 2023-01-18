@@ -1,0 +1,1 @@
+CREATE TABLE Entity1(Attribute1 INT NOT NULL,Attribute2 text NOT NULL);

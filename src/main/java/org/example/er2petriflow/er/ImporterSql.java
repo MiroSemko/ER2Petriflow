@@ -19,7 +19,8 @@ public class ImporterSql {
     private ERDiagram result;
 
 
-    public Optional<ERDiagram> convert(String sqls) {
+    public Optional<ERDiagram> convert(InputStream inputStream) {
+        String sqls = inputStreamToString(inputStream);
 
         result = new ERDiagram();
         Map<String, Entity> entityMap = new HashMap<>();
@@ -98,7 +99,16 @@ public class ImporterSql {
             entity.addAttribute(attribute);
         }
     }
+    public String inputStreamToString(InputStream inputStream) {
+//        String originalString = randomAlphabetic(DEFAULT_SIZE);
+//        InputStream inputStream = new ByteArrayInputStream(originalString.getBytes());
 
+        return new BufferedReader(
+                new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                .lines()
+                .collect(Collectors.joining("\n"));
+//        assertThat(text, equalTo(originalString));
+    }
 }
 
 
