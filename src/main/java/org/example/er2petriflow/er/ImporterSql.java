@@ -17,19 +17,17 @@ import java.util.stream.Collectors;
 
 public class ImporterSql {
     private ERDiagram result;
-    private Map<String, Entity> entityMap;
     private Map<String, List<String>> foreignKeyMap;
 
     public Optional<ERDiagram> convert(InputStream inputStream) {
         String sqls = inputStreamToString(inputStream);
 
         result = new ERDiagram();
-        entityMap = new HashMap<>();
         foreignKeyMap = new HashMap<>();
 
         mapEntities(sqls);
-        mapNaryRelationships();
-        mapOtherRelationships();
+        mapNaryRelations();
+        mapOtherRelations();
 
         return Optional.of(result);
     }
@@ -44,8 +42,6 @@ public class ImporterSql {
 
                 String tableName = table.getTable().getName();
                 Entity entity = new Entity(tableName);
-                //todo better entityMap(same name)
-                entityMap.put(entity.getName(), entity);
 
                 addAttributes(table, entity);
                 result.addEntity(entity);
@@ -56,6 +52,7 @@ public class ImporterSql {
             }
         }
     }
+
 
     protected void mapForeignKeys(String tableName, List<Index> indexes){
         if(indexes == null)
@@ -71,6 +68,7 @@ public class ImporterSql {
         System.out.println(foreignKeyMap);
     }
 
+
     protected boolean isReferencedByForeignKey(String table){
         for (Map.Entry<String, List<String>> e : foreignKeyMap.entrySet()) {
             String k = e.getKey();
@@ -82,7 +80,8 @@ public class ImporterSql {
         return false;
     }
 
-    protected void mapNaryRelationships(){
+
+    protected void mapNaryRelations(){
         for (Map.Entry<String, List<String>> e : foreignKeyMap.entrySet()) {
             String table = e.getKey();
             List<String> foreignKeys = e.getValue();
@@ -92,34 +91,33 @@ public class ImporterSql {
 
                 Relation rel = new Relation(table);
                 for (String fk : foreignKeys) {
-                    rel.addEntity(entityMap.get(fk));
+                    rel.addEntity(result.getEntityByName(fk));
                 }
 
-                Entity tableEntity = entityMap.get(table);
+                Entity tableEntity = result.getEntityByName(table);
                 if(tableEntity.getAttributes() != null){
                     for(Attribute a : tableEntity.getAttributes()){
                         rel.addAttribute(a);
                     }
                 }
                 result.removeEntity(tableEntity);
-                entityMap.remove(table);
 
                 result.addRelation(rel);
             }
-
         }
     }
 
-    protected void mapOtherRelationships(){
+
+    protected void mapOtherRelations(){
         for (Map.Entry<String, List<String>> e : foreignKeyMap.entrySet()) {
             String table = e.getKey();
             List<String> foreignKeys = e.getValue();
 
             if(foreignKeys.size() < 2 || isReferencedByForeignKey(table)) {
                 for (String fk : foreignKeys) {
-                    Relation rel = new Relation("rel"); //todo name change
-                    rel.addEntity(entityMap.get(table));
-                    rel.addEntity(entityMap.get(fk));
+                    Relation rel = new Relation(fk+"-"+table); //todo name change
+                    rel.addEntity(result.getEntityByName(table));
+                    rel.addEntity(result.getEntityByName(fk));
                     result.addRelation(rel);
                 }
             }
@@ -139,6 +137,7 @@ public class ImporterSql {
         }
     }
 
+
     public String inputStreamToString(InputStream inputStream) {
         return new BufferedReader(
                 new InputStreamReader(inputStream, StandardCharsets.UTF_8))
@@ -146,6 +145,3 @@ public class ImporterSql {
                 .collect(Collectors.joining("\n"));
     }
 }
-
-
-

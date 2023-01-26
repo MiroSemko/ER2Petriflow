@@ -48,4 +48,12 @@ public class ERDiagram {
     public Map<Long, Entity> getEntityMap() {
         return this.entities;
     }
+
+    public Entity getEntityByName(String name) {
+        for(Entity e : entities.values()){
+            if(Objects.equals(e.getName(), name))
+                return e;
+        }
+        return null;
+    }
 }
