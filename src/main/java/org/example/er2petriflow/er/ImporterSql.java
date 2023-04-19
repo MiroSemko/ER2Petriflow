@@ -62,7 +62,11 @@ public class ImporterSql {
         for (Index i : indexes){
             if (i instanceof ForeignKeyIndex){
                 //map every foreign key of this table
-                foreignKeyMap.get(tableName).add(((ForeignKeyIndex) i).getTable().getName());
+                String referencedTableName = ((ForeignKeyIndex) i).getTable().getName();
+                if(Objects.equals(referencedTableName, tableName)){ //skip if the relation is unary
+                    continue;
+                }
+                foreignKeyMap.get(tableName).add(referencedTableName);
             }
         }
         System.out.println(foreignKeyMap);
