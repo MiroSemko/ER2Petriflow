@@ -7,4 +7,7 @@ public class TestHelper {
     public static InputStream getTestFile(String fileName) {
         return ImporterTests.class.getResourceAsStream("/" + fileName + ".erdplus");
     }
+    public static InputStream getTestFileSql(String fileName) {
+        return ImporterTests.class.getResourceAsStream("/" + fileName + ".sql");
+    }
 }

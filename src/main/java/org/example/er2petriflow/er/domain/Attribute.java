@@ -22,4 +22,18 @@ public class Attribute {
         this.type = type;
         this.titlePart = titlePart;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Attribute)) return false;
+
+        Attribute attribute = (Attribute) o;
+
+        if (isTitlePart() != attribute.isTitlePart()) return false;
+        if (!getName().equals(attribute.getName())) return false;
+        if (getType() != attribute.getType()) return false;
+        return getVariableIdentifier() != null ? getVariableIdentifier().equals(attribute.getVariableIdentifier()) : attribute.getVariableIdentifier() == null;
+    }
+
 }

@@ -1,0 +1,218 @@
+﻿{
+  "version": 2,
+  "www": "erdplus.com",
+  "shapes": [
+    {
+      "type": "Entity",
+      "details": {
+        "name": "Entity1",
+        "type": "regular",
+        "x": 672,
+        "y": 322.5,
+        "isDisjointed": true,
+        "isTotalSpecialization": true,
+        "isSubtype": false,
+        "supertypeEntityId": null,
+        "id": 4
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Attribute1: Number",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 616,
+        "y": 128.5,
+        "id": 5
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "Attribute2: text",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 789,
+        "y": 152.5,
+        "id": 6
+      }
+    },
+    {
+      "type": "Entity",
+      "details": {
+        "name": "Entity_with_more_attributes",
+        "type": "regular",
+        "x": 1197,
+        "y": 388.5,
+        "isDisjointed": true,
+        "isTotalSpecialization": true,
+        "isSubtype": false,
+        "supertypeEntityId": null,
+        "id": 9
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "New_Attribute: int",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 1193,
+        "y": 275.5,
+        "id": 10
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "NewAttribute2: Integer",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 1314,
+        "y": 322.5,
+        "id": 12
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "NewAttribute3: number",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 1355,
+        "y": 394.5,
+        "id": 14
+      }
+    },
+    {
+      "type": "Attribute",
+      "details": {
+        "name": "NewAttribute4: double",
+        "isDerived": false,
+        "isMultivalued": false,
+        "isOptional": false,
+        "isComposite": false,
+        "isUnique": false,
+        "x": 1291,
+        "y": 466.5,
+        "id": 16
+      }
+    },
+    {
+      "type": "Relationship",
+      "details": {
+        "name": "Entity1-Entity_with_more_attributes",
+        "isIdentifying": false,
+        "x": 940,
+        "y": 367,
+        "slots": [
+          {
+            "slotIndex": 0,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 4
+          },
+          {
+            "slotIndex": 1,
+            "minimum": "",
+            "maximum": "",
+            "participation": "unspecified",
+            "cardinality": "unspecified",
+            "role": "",
+            "entityId": 9
+          }
+        ],
+        "id": 23
+      }
+    }
+  ],
+  "connectors": [
+    {
+      "type": "Connector",
+      "details": {
+        "id": 17
+      },
+      "source": 5,
+      "destination": 4
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 18
+      },
+      "source": 6,
+      "destination": 4
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 19
+      },
+      "source": 10,
+      "destination": 9
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 20
+      },
+      "source": 12,
+      "destination": 9
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 21
+      },
+      "source": 14,
+      "destination": 9
+    },
+    {
+      "type": "Connector",
+      "details": {
+        "id": 22
+      },
+      "source": 16,
+      "destination": 9
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 0,
+        "id": 24
+      },
+      "source": 4,
+      "destination": 23
+    },
+    {
+      "type": "RelationshipConnector",
+      "details": {
+        "slotIndex": 1,
+        "id": 25
+      },
+      "source": 9,
+      "destination": 23
+    }
+  ],
+  "width": 2000,
+  "height": 1000
+}

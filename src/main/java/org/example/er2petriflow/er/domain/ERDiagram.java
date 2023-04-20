@@ -56,4 +56,56 @@ public class ERDiagram {
         }
         return null;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ERDiagram)) return false;
+
+        ERDiagram erDiagram = (ERDiagram) o;
+
+        if (!getEntities().equals(erDiagram.getEntities())) return false;
+        if (!getRelations().equals(erDiagram.getRelations())) return false;
+        if (!entityCounter.equals(erDiagram.entityCounter)) return false;
+        return relationCounter.equals(erDiagram.relationCounter);
+    }
+
+
+    public String toVisualString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ERDiagram:\n\n");
+        sb.append("Entities:\n");
+
+        for (Entity entity : entities.values()) {
+            sb.append("[").append(entity.getName()).append("]\n");
+            for (Attribute attribute : entity.getAttributes()) {
+                sb.append("  |---- ").append(attribute.getName()).append(" (").append(attribute.getType()).append(")\n");
+            }
+        }
+
+        sb.append("\nRelations:\n");
+        for (Relation relation : relations.values()) {
+            List<Entity> connectedEntities = new ArrayList<>(relation.getConnections());
+
+            sb.append(relation.getName()).append(" (");
+
+            for (int i = 0; i < connectedEntities.size(); i++) {
+                sb.append(connectedEntities.get(i).getName());
+                if (i < connectedEntities.size() - 1) {
+                    sb.append(", ");
+                }
+            }
+            sb.append(")\n");
+
+            for (Attribute attribute : relation.getAttributes()) {
+                sb.append("  |---- ").append(attribute.getName()).append(" (").append(attribute.getType()).append(")\n");
+            }
+        }
+
+        return sb.toString();
+    }
+
+
+
+
 }

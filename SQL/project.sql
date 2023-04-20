@@ -4,8 +4,8 @@ CREATE TABLE Project (
     FOREIGN KEY (iname) REFERENCES Institute(iname)
 );
 CREATE TABLE Employee (
-    ename varchar, age int, nationality varchar, supervisor varchar, PRIMARY KEY (ename)
---    FOREIGN KEY (supervisor) REFERENCES Employee(ename)
+    ename varchar, age int, nationality varchar, supervisor varchar, PRIMARY KEY (ename),
+    FOREIGN KEY (supervisor) REFERENCES Employee(ename)
 );
 CREATE TABLE Works(
     ename varchar, pno int, instrument_no int,
