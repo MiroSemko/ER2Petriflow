@@ -58,6 +58,7 @@ public class ER2PetriflowCLI {
             Importer importer = new Importer();
             diagram = importer.importDiagram(inputStream);
         }
+//        System.out.println(diagram.get().toVisualString());
         closeStream(inputStream);
         if (diagram.isEmpty()) {
             System.err.println("The diagram file could not be read! Look above for Exception stacktrace.");

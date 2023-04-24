@@ -32,13 +32,26 @@ public class ImporterSql {
         return Optional.of(result);
     }
 
+    public Optional<ERDiagram> convert(String inputStream) {
+        String sqls = inputStream;
+
+        result = new ERDiagram();
+        foreignKeyMap = new HashMap<>();
+
+        mapEntities(sqls);
+        mapNaryRelations();
+        mapOtherRelations();
+
+        return Optional.of(result);
+    }
+
 
     protected void mapEntities(String sqls) {
         for (String sql : sqls.split(";")) {
             CreateTable table;
             try {
                 table = (CreateTable) CCJSqlParserUtil.parse(sql);
-                System.out.println(table);
+//                System.out.println(table);
 
                 String tableName = table.getTable().getName();
                 Entity entity = new Entity(tableName);
@@ -57,7 +70,7 @@ public class ImporterSql {
     protected void mapForeignKeys(String tableName, List<Index> indexes){
         if(indexes == null)
             return;
-        System.out.println(indexes);
+//        System.out.println(indexes);
         foreignKeyMap.put(tableName, new ArrayList<>());
         for (Index i : indexes){
             if (i instanceof ForeignKeyIndex){
@@ -69,7 +82,7 @@ public class ImporterSql {
                 foreignKeyMap.get(tableName).add(referencedTableName);
             }
         }
-        System.out.println(foreignKeyMap);
+//        System.out.println(foreignKeyMap);
     }
 
 
@@ -90,8 +103,8 @@ public class ImporterSql {
             String table = e.getKey();
             List<String> foreignKeys = e.getValue();
 
-            if(foreignKeys.size() >= 2 && !isReferencedByForeignKey(table)){ //TODO AND FK REFERENCES TO THIS ENTITY == 0
-                System.out.println("mapping n-ary for: " + table + foreignKeys);
+            if(foreignKeys.size() >= 2 && !isReferencedByForeignKey(table)){
+//                System.out.println("mapping n-ary for: " + table + foreignKeys);
 
                 Relation rel = new Relation(table);
                 for (String fk : foreignKeys) {

@@ -42,8 +42,22 @@ public class Importer {
         }
     }
 
+    public Optional<ERDiagram> importDiagram(String jsonFile) {
+        try {
+            Diagram imported = unmarshall(jsonFile);
+            return convert(imported);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
+    }
+
     protected Diagram unmarshall(InputStream jsonFile) throws IOException {
         return new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(jsonFile, Diagram.class);
+    }
+
+    protected Diagram unmarshall(String jsonString) throws IOException {
+        return new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).readValue(jsonString, Diagram.class);
     }
 
     protected Optional<ERDiagram> convert(Diagram imported) {
