@@ -37,8 +37,7 @@ public class Relation extends AttributeOwner {
             return false;
         }
         Relation other = (Relation) obj;
-        if (!Objects.equals(this.getId(), other.getId()) ||
-                !Objects.equals(this.getName(), other.getName()) ||
+        if (!Objects.equals(this.getName(), other.getName()) ||
                 !Objects.equals(this.getProcessIdentifier(), other.getProcessIdentifier()) ||
                 !Objects.equals(this.getConnections().size(), other.getConnections().size()) ||
                 !Objects.equals(this.getAttributes().size(), other.getAttributes().size())) {

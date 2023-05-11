@@ -44,8 +44,7 @@ public class Entity extends AttributeOwner {
             return false;
         }
         Entity other = (Entity) obj;
-        return Objects.equals(this.getId(), other.getId()) &&
-                Objects.equals(this.getName(), other.getName()) &&
+        return  Objects.equals(this.getName(), other.getName()) &&
                 Objects.equals(this.getProcessIdentifier(), other.getProcessIdentifier()) &&
                 Objects.equals(this.getPetriflow(), other.getPetriflow()) &&
                 Objects.equals(this.getProcessedRelations(), other.getProcessedRelations()) &&

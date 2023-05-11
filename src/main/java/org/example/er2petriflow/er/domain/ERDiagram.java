@@ -64,8 +64,8 @@ public class ERDiagram {
 
         ERDiagram erDiagram = (ERDiagram) o;
 
-        if (!getEntities().equals(erDiagram.getEntities())) return false;
-        if (!getRelations().equals(erDiagram.getRelations())) return false;
+        if (!getEntities().containsAll(erDiagram.getEntities())) return false;
+        if (!getRelations().containsAll(erDiagram.getRelations())) return false;
         if (!entityCounter.equals(erDiagram.entityCounter)) return false;
         return relationCounter.equals(erDiagram.relationCounter);
     }
