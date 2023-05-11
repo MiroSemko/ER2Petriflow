@@ -26,7 +26,8 @@ public class SqlImporterTests {
     }
 
     static Stream<String> testFileNames() {
-        return Stream.of("SingleEntity", "SingleRelation2","MultipleEntities2", "5relation", "kind");
+//        return Stream.of("SingleEntity", "SingleRelation2","MultipleEntities2", "5relation");
+        return Stream.of("Vztah", "Ternarny", "Binarny", "NieBinarny");
     }
 
     @ParameterizedTest
@@ -46,8 +47,8 @@ public class SqlImporterTests {
         System.out.println(diagram.toVisualString());
         System.out.println(sqlDiagram.toVisualString());
 
-        assertEquals(diagram.getEntities(), sqlDiagram.getEntities());
-        assertEquals(diagram.getRelations(), sqlDiagram.getRelations());
+        assertTrue(diagram.getEntities().containsAll(sqlDiagram.getEntities()));
+        assertTrue(diagram.getRelations().containsAll(sqlDiagram.getRelations()));
 
         assertEquals(diagram, sqlDiagram);
     }
