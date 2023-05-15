@@ -42,6 +42,7 @@ public class ImporterSql {
         mapNaryRelations();
         mapOtherRelations();
 
+        System.out.println(result.toVisualString());
         return Optional.of(result);
     }
 

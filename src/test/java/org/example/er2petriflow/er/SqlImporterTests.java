@@ -1,6 +1,7 @@
 package org.example.er2petriflow.er;
 
 import org.example.er2petriflow.er.domain.*;
+import org.example.er2petriflow.generated.petriflow.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,11 +19,14 @@ public class SqlImporterTests {
 
     private Importer importer;
     private ImporterSql sqlImporter;
+    private Converter converter;
 
     @BeforeEach
     void setUp() {
         importer = new Importer();
         sqlImporter = new ImporterSql();
+        converter = new Converter();
+
     }
 
     static Stream<String> testFileNames() {
@@ -51,5 +55,25 @@ public class SqlImporterTests {
         assertTrue(diagram.getRelations().containsAll(sqlDiagram.getRelations()));
 
         assertEquals(diagram, sqlDiagram);
+    }
+
+    @ParameterizedTest
+    @MethodSource("testFileNames")
+    @DisplayName("Should import sql and erdplus file and the final converted ERD should be the same")
+    void convertCompare(String fileName) {
+        Optional<ERDiagram> result = importer.importDiagram(getTestFile(fileName));
+        Optional<ERDiagram> sqlResult = sqlImporter.convert(getTestFileSql(fileName));
+
+        ERDiagram diagram = result.get();
+        ERDiagram sqlDiagram = sqlResult.get();
+
+        assertEquals(diagram, sqlDiagram);
+
+
+        List<Document> petriflows = converter.convertToPetriflows(diagram);
+        List<Document> sqlPetriflows = converter.convertToPetriflows(sqlDiagram);
+
+        assertEquals(petriflows, sqlPetriflows);
+
     }
 }

@@ -22,14 +22,12 @@ public class ER2PetriflowGUI extends JFrame {
 
     private static final String DEFAULT_OUTPUT_NAME = "out.zip";
 
-
     private JTextField inputField;
     private JTextField outputField;
+    private JTextField outputFieldTab2;
     private JTextArea inputTextArea;
-    private JButton inputBrowseButton;
-    private JButton outputBrowseButton;
-    private JButton convertButton;
     private JComboBox<String> inputTypeComboBox;
+    private JTabbedPane tabbedPane;
 
 
     public ER2PetriflowGUI() {
@@ -45,55 +43,87 @@ public class ER2PetriflowGUI extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         initComponents();
-        setSize(600, 400);
+        setSize(650, 400);
         setLocationRelativeTo(null);
     }
 
     private void initComponents() {
         inputField = new JTextField();
         outputField = new JTextField();
+        outputFieldTab2 = new JTextField();
         inputTextArea = new JTextArea();
-        inputBrowseButton = new JButton("Browse");
-        outputBrowseButton = new JButton("Browse");
-        convertButton = new JButton("Convert");
+        JButton inputBrowseButton = new JButton("Browse");
+        JButton outputBrowseButton = new JButton("Browse");
+        JButton outputBrowseButtonTab2 = new JButton("Browse");
+        JButton convertButton = new JButton("Convert");
+        JButton convertButtonTab2 = new JButton("Convert");
         inputTypeComboBox = new JComboBox<>(new String[]{"sql", "erdplus"});
 
-        JPanel inputPanel = new JPanel(new BorderLayout());
-        inputPanel.add(new JLabel("Input File:"), BorderLayout.WEST);
-        inputPanel.add(inputField, BorderLayout.CENTER);
-        inputPanel.add(inputBrowseButton, BorderLayout.EAST);
+        //Tab 1
+        JPanel fileInputOutputPanel = new JPanel();
+        fileInputOutputPanel.setLayout(new BoxLayout(fileInputOutputPanel, BoxLayout.Y_AXIS));
 
-        JPanel outputPanel = new JPanel(new BorderLayout());
-        outputPanel.add(new JLabel("Output File:"), BorderLayout.WEST);
-        outputPanel.add(outputField, BorderLayout.CENTER);
-        outputPanel.add(outputBrowseButton, BorderLayout.EAST);
+        JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        inputPanel.add(new JLabel("Input File: "));
+        fileInputOutputPanel.add(inputPanel);
 
+        JPanel inputAreaButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        inputField.setColumns(40);
+        inputAreaButtonPanel.add(inputField);
+        inputAreaButtonPanel.add(inputBrowseButton);
+        fileInputOutputPanel.add(inputAreaButtonPanel);
 
-        JPanel topPanel = new JPanel(new GridLayout(2, 1));
-        topPanel.add(inputPanel);
-        topPanel.add(outputPanel);
+        JPanel outputPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        outputPanel.add(new JLabel("Output File: "));
+        fileInputOutputPanel.add(outputPanel);
 
+        JPanel outputAreaButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        outputField.setColumns(40);
+        outputAreaButtonPanel.add(outputField);
+        outputAreaButtonPanel.add(outputBrowseButton);
+        fileInputOutputPanel.add(outputAreaButtonPanel);
+
+        JPanel convertButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        convertButtonPanel.add(convertButton);
+        fileInputOutputPanel.add(convertButtonPanel);
+
+        //Tab 2
+        JPanel secondTab = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
+        JPanel inputPanelTab2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        inputPanelTab2.add(new JLabel("Input Text Type:"));
+        inputPanelTab2.add(inputTypeComboBox);
+
+        inputTextArea.setRows(12);
+        inputTextArea.setColumns(50);
         JScrollPane textAreaScrollPane = new JScrollPane(inputTextArea);
+        JPanel textAreaPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        textAreaPanel.add(textAreaScrollPane);
 
-        JPanel botPanel = new JPanel(new GridLayout(1, 2));
+        JPanel outputPanelTab2 = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        outputPanelTab2.add(new JLabel("Output File:"));
+        outputFieldTab2.setColumns(40);
+        outputPanelTab2.add(outputFieldTab2);
+        outputPanelTab2.add(outputBrowseButtonTab2);
 
-        botPanel.add(inputTypeComboBox, BorderLayout.WEST);
-        botPanel.add(convertButton, BorderLayout.EAST);
+        secondTab.add(inputPanelTab2);
+        secondTab.add(textAreaPanel);
+        secondTab.add(outputPanelTab2);
+        secondTab.add(convertButtonTab2);
 
 
-        JPanel container = new JPanel(new BorderLayout());
-        container.setBorder(new EmptyBorder(10, 10, 10, 10));
-        container.add(topPanel, BorderLayout.NORTH);
-        container.add(textAreaScrollPane, BorderLayout.CENTER);
-        container.add(botPanel, BorderLayout.SOUTH);
+        tabbedPane = new JTabbedPane();
+        tabbedPane.addTab("File Input/Output", fileInputOutputPanel);
+        tabbedPane.addTab("Text Input", secondTab);
 
-        add(container);
+        add(tabbedPane);
 
         inputBrowseButton.addActionListener(new InputBrowseButtonListener());
         outputBrowseButton.addActionListener(new OutputBrowseButtonListener());
         convertButton.addActionListener(new ConvertButtonListener());
+        outputBrowseButtonTab2.addActionListener(new OutputBrowseButtonListener());
+        convertButtonTab2.addActionListener(new ConvertButtonListener());
     }
-
 
 
     private class InputBrowseButtonListener implements ActionListener {
@@ -115,6 +145,8 @@ public class ER2PetriflowGUI extends JFrame {
             if (returnValue == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
                 outputField.setText(selectedFile.getAbsolutePath());
+                outputFieldTab2.setText(selectedFile.getAbsolutePath());
+
             }
         }
     }
@@ -122,27 +154,31 @@ public class ER2PetriflowGUI extends JFrame {
     private class ConvertButtonListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             try {
-                String inputText = null;
-                FileInputStream inputStream = null;
+                int selectedTabIndex = tabbedPane.getSelectedIndex();
 
-                if (!inputField.getText().isEmpty()) {
-                    inputStream = new FileInputStream(String.valueOf(inputField.getText()));
+                Optional<ERDiagram> diagram;
+                if (selectedTabIndex == 0) {
+//                    FileInputStream inputStream = new FileInputStream(String.valueOf(inputField.getText()));
+                    FileInputStream inputStream;
+                    try {
+                        inputStream = new FileInputStream(String.valueOf(inputField.getText()));
+                    } catch (FileNotFoundException exce) {
+                        throw new FileNotFoundException("Input file located at '" + inputField.getText() + "' could not be found!");
+                    }
+
+                    String extension = inputField.getText().substring(inputField.getText().lastIndexOf('.') + 1);
+
+                    if (extension.equals("sql")) {
+                        ImporterSql importerSql = new ImporterSql();
+                        diagram = importerSql.convert(inputStream);
+                    } else {
+                        Importer importer = new Importer();
+                        diagram = importer.importDiagram(inputStream);
+                    }
+                    closeStream(inputStream);
                 } else {
-                    inputText = inputTextArea.getText();
-                }
+                    String inputText = inputTextArea.getText();
 
-                File output = new File(outputField.getText());
-                if (output.isDirectory()) {
-                    output = new File(output.getPath() + File.separator + DEFAULT_OUTPUT_NAME);
-                }
-                FileOutputStream outputStream = new FileOutputStream(output);
-
-
-
-                Optional<ERDiagram> diagram = null;
-
-
-                if (inputText != null){
                     String extension = (String) inputTypeComboBox.getSelectedItem();
 
                     if (extension.equals("sql")) {
@@ -153,19 +189,24 @@ public class ER2PetriflowGUI extends JFrame {
                         diagram = importer.importDiagram(inputText);
                     }
                 }
-                else if (inputStream != null){
-                    String extension = inputField.getText().substring(inputField.getText().lastIndexOf('.') + 1);
 
-                    if (extension.equals("sql")) {
-                        ImporterSql importerSql = new ImporterSql();
-                        diagram = importerSql.convert(inputStream);
-                    } else {
-                        Importer importer = new Importer();
-                        diagram = importer.importDiagram(inputStream);
-                    }
-
-                    closeStream(inputStream);
+                String outputPath = "." + File.separator;
+                if(!outputField.getText().isEmpty()){
+                    outputPath = outputField.getText();
                 }
+
+                File output = new File(outputPath);
+                if (output.isDirectory()) {
+                    output = new File(output.getPath() + File.separator + DEFAULT_OUTPUT_NAME);
+                }
+//                FileOutputStream outputStream = new FileOutputStream(output);
+                FileOutputStream outputStream;
+                try {
+                    outputStream = new FileOutputStream(output);
+                } catch (FileNotFoundException exc) {
+                    throw new FileNotFoundException("Output file located at '" + output.getPath() + "' could not be found!");
+                }
+
 
                 if (diagram.isEmpty()) {
                     throw new RuntimeException("The diagram file could not be read!");
@@ -184,8 +225,6 @@ public class ER2PetriflowGUI extends JFrame {
                 } finally {
                     closeStream(outputStream);
                 }
-
-
 
                 JOptionPane.showMessageDialog(ER2PetriflowGUI.this, "Conversion completed successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception ex) {
