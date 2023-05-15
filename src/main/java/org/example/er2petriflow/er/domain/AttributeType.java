@@ -9,9 +9,9 @@ import java.util.Locale;
 import java.util.Set;
 
 public enum AttributeType {
-    TEXT(DataType.TEXT, "text", "string", "varchar"),
-    NUMBER(DataType.NUMBER, "number", "int", "integer", "float", "double", "decimal"),
-    DATE(DataType.DATE, "date");
+    TEXT(DataType.TEXT, "text", "string", "varchar", "tinytext", "mediumtext", "longtext"),
+    NUMBER(DataType.NUMBER, "number", "int", "integer", "float", "double", "decimal", "tinyint", "smallint", "mediumint", "bigint", "dec", "boolean"),
+    DATE(DataType.DATE, "date", "datetime", "time", "timestamp");
 
     @Getter
     private final DataType mapping;
