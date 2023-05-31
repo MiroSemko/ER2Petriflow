@@ -68,16 +68,16 @@ public class ImporterSql {
     }
 
 
-    protected void mapForeignKeys(String tableName, List<Index> indexes){
-        if(indexes == null)
+    protected void mapForeignKeys(String tableName, List<Index> indexes) {
+        if (indexes == null)
             return;
 //        System.out.println(indexes);
         foreignKeyMap.put(tableName, new ArrayList<>());
-        for (Index i : indexes){
-            if (i instanceof ForeignKeyIndex){
+        for (Index i : indexes) {
+            if (i instanceof ForeignKeyIndex) {
                 //map every foreign key of this table
                 String referencedTableName = ((ForeignKeyIndex) i).getTable().getName();
-                if(Objects.equals(referencedTableName, tableName)){ //skip if the relation is unary
+                if (Objects.equals(referencedTableName, tableName)) { //skip if the relation is unary
                     continue;
                 }
                 foreignKeyMap.get(tableName).add(referencedTableName);
@@ -87,11 +87,11 @@ public class ImporterSql {
     }
 
 
-    protected boolean isReferencedByForeignKey(String table){
+    protected boolean isReferencedByForeignKey(String table) {
         for (Map.Entry<String, List<String>> e : foreignKeyMap.entrySet()) {
             String k = e.getKey();
             for (String v : e.getValue()) {
-                if(v.equals(table))
+                if (v.equals(table))
                     return true;
             }
         }
@@ -99,12 +99,12 @@ public class ImporterSql {
     }
 
 
-    protected void mapNaryRelations(){
+    protected void mapNaryRelations() {
         for (Map.Entry<String, List<String>> e : foreignKeyMap.entrySet()) {
             String table = e.getKey();
             List<String> foreignKeys = e.getValue();
 
-            if(foreignKeys.size() >= 2 && !isReferencedByForeignKey(table)){
+            if (foreignKeys.size() >= 2 && !isReferencedByForeignKey(table)) {
 //                System.out.println("mapping n-ary for: " + table + foreignKeys);
 
                 Relation rel = new Relation(table);
@@ -113,8 +113,8 @@ public class ImporterSql {
                 }
 
                 Entity tableEntity = result.getEntityByName(table);
-                if(tableEntity.getAttributes() != null){
-                    for(Attribute a : tableEntity.getAttributes()){
+                if (tableEntity.getAttributes() != null) {
+                    for (Attribute a : tableEntity.getAttributes()) {
                         rel.addAttribute(a);
                     }
                 }
@@ -126,14 +126,14 @@ public class ImporterSql {
     }
 
 
-    protected void mapOtherRelations(){
+    protected void mapOtherRelations() {
         for (Map.Entry<String, List<String>> e : foreignKeyMap.entrySet()) {
             String table = e.getKey();
             List<String> foreignKeys = e.getValue();
 
-            if(foreignKeys.size() < 2 || isReferencedByForeignKey(table)) {
+            if (foreignKeys.size() < 2 || isReferencedByForeignKey(table)) {
                 for (String fk : foreignKeys) {
-                    Relation rel = new Relation(fk+"-"+table); //todo name change
+                    Relation rel = new Relation(fk + "-" + table);
                     rel.addEntity(result.getEntityByName(table));
                     rel.addEntity(result.getEntityByName(fk));
                     result.addRelation(rel);
@@ -143,9 +143,8 @@ public class ImporterSql {
     }
 
 
-    protected void addAttributes(CreateTable table, Entity entity){
-        for(ColumnDefinition col : table.getColumnDefinitions()){
-            //todo data type from col.getColDataType() to AttributeType
+    protected void addAttributes(CreateTable table, Entity entity) {
+        for (ColumnDefinition col : table.getColumnDefinitions()) {
             Attribute attribute = new Attribute(
                     col.getColumnName(),
                     AttributeType.resolve(col.getColDataType().toString().replaceAll("[^a-zA-Z]", ""))
