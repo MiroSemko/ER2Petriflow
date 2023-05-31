@@ -58,7 +58,8 @@
                         </goals>
                         <configuration>
                             <mainClass>
-                                org.example.er2petriflow.ER2PetriflowCLI
+<!--                                org.example.er2petriflow.ER2PetriflowCLI-->
+                                org.example.er2petriflow.ER2PetriflowGUI
                             </mainClass>
                         </configuration>
                     </execution>
