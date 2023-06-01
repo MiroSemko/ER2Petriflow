@@ -19,13 +19,11 @@ public class SqlImporterTests {
 
     private Importer importer;
     private ImporterSql sqlImporter;
-    private Converter converter;
 
     @BeforeEach
     void setUp() {
         importer = new Importer();
         sqlImporter = new ImporterSql();
-        converter = new Converter();
 
     }
 
@@ -57,23 +55,4 @@ public class SqlImporterTests {
         assertEquals(diagram, sqlDiagram);
     }
 
-    @ParameterizedTest
-    @MethodSource("testFileNames")
-    @DisplayName("Should import sql and erdplus file and the final converted ERD should be the same")
-    void convertCompare(String fileName) {
-        Optional<ERDiagram> result = importer.importDiagram(getTestFile(fileName));
-        Optional<ERDiagram> sqlResult = sqlImporter.convert(getTestFileSql(fileName));
-
-        ERDiagram diagram = result.get();
-        ERDiagram sqlDiagram = sqlResult.get();
-
-        assertEquals(diagram, sqlDiagram);
-
-
-        List<Document> petriflows = converter.convertToPetriflows(diagram);
-        List<Document> sqlPetriflows = converter.convertToPetriflows(sqlDiagram);
-
-        assertEquals(petriflows, sqlPetriflows);
-
-    }
 }

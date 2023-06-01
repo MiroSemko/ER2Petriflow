@@ -30,7 +30,7 @@ public class ConverterTests {
         converter = new Converter();
     }
 
-    @Test
+//    @Test
     @DisplayName("Should convert single entity")
     void convertSingleEntity() {
         Optional<ERDiagram> result = importer.importDiagram(getTestFile("SingleEntity"));

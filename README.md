@@ -12,6 +12,12 @@ This project runs requires Java 16 or newer, as it uses the new multi-line strin
 
 The maven project contained in this repository must be built locally into an executable jar file.
 
+```
+mvn clean package
+```
+
+The executable jar file will be located in the `target` directory.
+
 ### GUI
 
 File Selection:
